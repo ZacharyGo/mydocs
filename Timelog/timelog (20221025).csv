@@ -1,0 +1,414 @@
+Date,User,Activity,Issue,Comment,Hours
+10/24/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+10/24/2022,Go Zachary,????,WBS #19817: [Create] 19744 Replication,Update Investigation Report on the reviews create QA 20183. Confirmation on investigation result and have it Translated together with the Investigation Report ,7.00
+10/21/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+10/21/2022,Go Zachary,????,WBS #19817: [Create] 19744 Replication,Finish replicating incident and creating Investigation Report and ready for review,7.00
+10/20/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai and Technical Share Sessions,1.25
+10/20/2022,Go Zachary,????,WBS #19817: [Create] 19744 Replication,Continue replication but got stuck in adding a record of table ed3601tTbl into json in class ESNZZ12NyukinKeshikomiImpl,6.25
+10/19/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+10/19/2022,Go Zachary,????,WBS #19817: [Create] 19744 Replication,"Finish Setting up API Tester and  Start replicating using the API tester but got stuck on trying to find the values for InDTO since the HistoryLog only provide the ""...."" values for some List",7.00
+10/18/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai and Technical Share Sessions,0.75
+10/18/2022,Go Zachary,????,WBS #19817: [Create] 19744 Replication," Continue fixing the problem with my API driver, and Start using UI (Profit-web) instead of API driver since API driver won't execute on my laptop.",6.75
+10/17/2022,Go Zachary,????,WBS #19817: [Create] 19744 Replication, Setup API driver for replication with the help of sir Levie but keep on getting error,6.75
+10/17/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.75
+10/13/2022,Go Zachary,????,WBS #19817: [Create] 19744 Replication,import new data from FJ for 19744 AND start replicating 19744,5.75
+10/13/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai and Technical Share Sessions,1.75
+10/12/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+10/12/2022,Go Zachary,????,WBS #18318: [GDC] Admin/Others, Finish fixing eclipse with the help of sir Levie,7.00
+10/11/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai and Technical Share Sessions,1.50
+10/11/2022,Go Zachary,????,WBS #18318: [GDC] Admin/Others, Fix eclipse error on both new and old laptop,6.00
+10/10/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,1.00
+10/10/2022,Go Zachary,????,WBS #20111: 19299 Replication,Import data from all answered QA from FJ. ,6.50
+10/07/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+10/07/2022,Go Zachary,????,WBS #18318: [GDC] Admin/Others,Finish testing building and running project copied to one drive and test newly downloaded project from GIT,7.00
+10/06/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.75
+10/06/2022,Go Zachary,????,WBS #18318: [GDC] Admin/Others,Start test building and running Project on one drive folder using old folder but failed due to VPN and local administrator not yet setup,6.75
+10/05/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,"",0.75
+10/05/2022,Go Zachary,????,WBS #18318: [GDC] Admin/Others,Transferring files from old laptop to new laptop ,5.75
+10/05/2022,Go Zachary,????,WBS #19817: [Create] 19744 Replication,Update SQL of QA 20098 and ask BSE to inform FJ about QA,1.00
+10/04/2022,Go Zachary,????,WBS #19817: [Create] 19744 Replication,Search for the lacking SQL needed for replication with the help of sr Vidal.. Created a SQL and QA 20098 for data request.,2.25
+10/04/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai and Technical Share Sessions,1.50
+10/04/2022,Go Zachary,????,WBS #18318: [GDC] Admin/Others,Transferring files from old laptop to new laptop ,3.75
+10/03/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+10/03/2022,Go Zachary,????,WBS #18318: [GDC] Admin/Others,Start Transferring files from old laptop to new laptop.,4.00
+10/03/2022,Go Zachary,????,WBS #19817: [Create] 19744 Replication,Import  new data from FJ QA #19991 and start replicating again,3.00
+09/29/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai and Technical Share Sessions,2.25
+09/29/2022,Go Zachary,????,WBS #19816: [Create] 19744 Identifying the direct cause,Continue creating investigation report while waiting for QA for request for the missing data to be answered,5.25
+09/28/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai and KT with John Paul Incident 19320,1.50
+09/28/2022,Go Zachary,????,WBS #19816: [Create] 19744 Identifying the direct cause,Start creating investigation report and while continue Identifying the root cause of error based on the values from history logs and waiting for QA for request for the missing data to be answered,6.00
+09/27/2022,Go Zachary,????,WBS #18317: [GDC] Meetings, KT with  My Lyn Incident 19299,1.00
+09/27/2022,Go Zachary,????,WBS #19816: [Create] 19744 Identifying the direct cause,Continue Identifying the root cause of error based on the values from history logs while waiting for QA for request for the missing data to be answered,3.50
+09/26/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+09/26/2022,Go Zachary,????,WBS #19816: [Create] 19744 Identifying the direct cause,Start Identifying the root cause of error based on the values from history logs while waiting for QA for request for the missing data to be answered,7.00
+09/23/2022,Go Zachary,????,WBS #19817: [Create] 19744 Replication, Finish importing Data from FJ.  and continue test replication,7.00
+09/23/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+09/22/2022,Go Zachary,????,WBS #19817: [Create] 19744 Replication, Finish locating data needed for replication. Finish creating  SQL (with sir Vidal assistance) for needed data if not available. Ask sir Vidal to create QA for me since I was on VL in the afternoon.,3.75
+09/22/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+09/21/2022,Go Zachary,????,WBS #19817: [Create] 19744 Replication,Continue locating data needed for replication. Start creating SQL for needed data.,7.00
+09/21/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+09/20/2022,Go Zachary,????,WBS #19817: [Create] 19744 Replication,Start importing Data from FJ. Had to transfer each tables into CSV file from the XLSX file given by FJ and fix columns with << null >> and null on numeric column,6.00
+09/20/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai and Technical Share Sessions,1.50
+09/16/2022,Go Zachary,????,WBS #19817: [Create] 19744 Replication, Try to start replicating to check if there are missing data,1.00
+09/16/2022,Go Zachary,????,WBS #19813: [Create] 19744 Input Documents' Analysis,Analyst input document again to be able to start replicating. ,5.75
+09/16/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.75
+09/15/2022,Go Zachary,????,WBS #19814: [Create] 19744 Design Documents' Analysis,Review design documents while waiting for QA #19919 to be answered.,7.00
+09/15/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+09/14/2022,Go Zachary,????,WBS #19814: [Create] 19744 Design Documents' Analysis,Review design documents while waiting for QA #19919 to be answered.,7.00
+09/14/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+09/13/2022,Go Zachary,????,WBS #19813: [Create] 19744 Input Documents' Analysis,Review and analyze input documents,5.25
+09/13/2022,Go Zachary,????,WBS #19815: [Create] 19744 Debugging and Code tracing,"Continue code tracing.ticket 19744  EZZZZ02NumberingImpl.getSaibanGenzaiNo, EZZZZ02NumberingImpl.doUpdateEd9035mTbl, EZZZZ02NumberingImpl.doSelectEd9035mTblByKey]",1.75
+09/13/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+09/12/2022,Go Zachary,????,WBS #19815: [Create] 19744 Debugging and Code tracing,"Continue code tracing ticket 19744  {EZZZZ02NumberingImpl.doExecute, EZZZZ02NumberingImpl.doSelectEd9035mTblByKey, EZZZZ02NumberingImpl.doUpdateEd9035mTbl}",6.75
+09/12/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.75
+09/08/2022,Go Zachary,????,WBS #19815: [Create] 19744 Debugging and Code tracing,"Continue code tracing.ticket 19744 {ESNZZ12NyukinKeshikomiImpl.doExecute, ESNZZ12NyukinKeshikomiImpl.getKaishaCd, ESNZZ12NyukinKeshikomiImpl.doExecute, ESNZZ12NyukinKeshikomiImpl.numberingKeshikomiNo}",7.00
+09/08/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+09/07/2022,Go Zachary,????,WBS #19815: [Create] 19744 Debugging and Code tracing,"Start code tracing.ticket 19744 {ESNZZ13SeikyuNyukinDaicyouTorokuImpl,doExecute, ESNZZ12NyukinKeshikomiImpl.seikyuNyukinDaichoInsert, ESNZZ13SeikyuNyukinDaicyouTorokuSqlMapper.selectKeshikomiTaisho}",7.00
+09/07/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+09/06/2022,Go Zachary,????,WBS #18318: [GDC] Admin/Others,"Prepare dicussion of ticket 18556 AND 18702, and CSV Detect tAble Tools for technical share session.",4.00
+09/06/2022,Go Zachary,????,WBS #19813: [Create] 19744 Input Documents' Analysis,Continue analyzing design documents.,2.25
+09/06/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,1.25
+09/05/2022,Go Zachary,????,WBS #19814: [Create] 19744 Design Documents' Analysis,Start Reading Design Documents,6.75
+09/05/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.75
+09/02/2022,Go Zachary,????,WBS #19813: [Create] 19744 Input Documents' Analysis,Continue reading input documents,7.00
+09/02/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+09/01/2022,Go Zachary,????,WBS #19415: [Create] 19307 Reviewer's Analysis,Assist Rain on Code tracing and replicating,1.00
+09/01/2022,Go Zachary,????,WBS #19813: [Create] 19744 Input Documents' Analysis,Continue reading input documents,6.00
+09/01/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+08/31/2022,Go Zachary,????,WBS #19813: [Create] 19744 Input Documents' Analysis,Start reading / translating input documents,7.00
+08/31/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+08/30/2022,Go Zachary,????,WBS #18318: [GDC] Admin/Others,. Work on creating a tool to identify which table the data in a CSV file belongs to.,7.00
+08/30/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+08/25/2022,Go Zachary,????,WBS #19714: [Create] 18700 Replication - Dev 2,. Work on creating a tool to identify which table the data in a CSV file belongs to.,6.50
+08/25/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai and Technical Share Sessions,1.00
+08/24/2022,Go Zachary,????,WBS #19415: [Create] 19307 Reviewer's Analysis,Assist Rain on Code tracing and replicating,3.75
+08/24/2022,Go Zachary,????,WBS #19714: [Create] 18700 Replication - Dev 2,Assist Joshua what he needs for the report,3.25
+08/24/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+08/23/2022,Go Zachary,????,WBS #19714: [Create] 18700 Replication - Dev 2,Continue Replicating,6.25
+08/23/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai and Technical Share Session,1.25
+08/22/2022,Go Zachary,????,WBS #19714: [Create] 18700 Replication - Dev 2,Create Ticket QA #19716 to Requet Data from FJ and Continue Replicating,7.00
+08/22/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+08/19/2022,Go Zachary,????,WBS #19714: [Create] 18700 Replication - Dev 2,Start Replicating,7.00
+08/19/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+08/17/2022,Go Zachary,????,WBS #19415: [Create] 19307 Reviewer's Analysis,Assist Rain on Code tracing and replicating,0.75
+08/17/2022,Go Zachary,????,WBS #19714: [Create] 18700 Replication - Dev 2,Finish importing data from QA #19576,6.25
+08/17/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+08/16/2022,Go Zachary,????,WBS #19714: [Create] 18700 Replication - Dev 2,Start Importing data from QA #19576,7.00
+08/16/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+08/15/2022,Go Zachary,????,WBS #19415: [Create] 19307 Reviewer's Analysis,Assist Rain on Code tracing and replicating,1.00
+08/15/2022,Go Zachary,????,WBS #19713: [Create] 18700 Identifying the direct cause -  Dev 2,Continue Identifying the root cause,6.00
+08/15/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+08/11/2022,Go Zachary,????,WBS #19713: [Create] 18700 Identifying the direct cause -  Dev 2,Continue Identifying the root cause,6.25
+08/11/2022,Go Zachary,????,"",Asakai and Technical Share Sessions,1.25
+08/10/2022,Go Zachary,????,WBS #19415: [Create] 19307 Reviewer's Analysis,Assist Rain on Code tracing and replicating,0.75
+08/10/2022,Go Zachary,????,WBS #19714: [Create] 18700 Replication - Dev 2,Finish preparing all SQL to request data,6.25
+08/10/2022,Go Zachary,????,"",Asakai,0.50
+08/09/2022,Go Zachary,????,WBS #19714: [Create] 18700 Replication - Dev 2,Continue prepare all SQL to request data,6.50
+08/09/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai and Technical Share Sessions,1.00
+08/08/2022,Go Zachary,????,WBS #19713: [Create] 18700 Identifying the direct cause -  Dev 2,Continue Identifying the root cause,3.50
+08/08/2022,Go Zachary,????,WBS #19714: [Create] 18700 Replication - Dev 2,Start preparing Queries for all tables that where used during the incident,3.50
+08/08/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+08/04/2022,Go Zachary,????,WBS #19713: [Create] 18700 Identifying the direct cause -  Dev 2,Continue Identifying the root cause,6.00
+08/04/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai and Technical Share Sessions,1.50
+08/03/2022,Go Zachary,????,WBS #19713: [Create] 18700 Identifying the direct cause -  Dev 2,Continue Identifying the root cause,7.00
+08/03/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+08/02/2022,Go Zachary,????,WBS #19713: [Create] 18700 Identifying the direct cause -  Dev 2,Continue Identifying the root cause,7.00
+08/02/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+07/29/2022,Go Zachary,????,WBS #19713: [Create] 18700 Identifying the direct cause -  Dev 2,Continue Identifying the root cause,6.75
+07/29/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.75
+07/28/2022,Go Zachary,????,WBS #19713: [Create] 18700 Identifying the direct cause -  Dev 2,Continue Identifying the root cause,7.00
+07/28/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+07/27/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.75
+07/27/2022,Go Zachary,????,WBS #19713: [Create] 18700 Identifying the direct cause -  Dev 2,Continue Identifying the root cause,6.75
+07/26/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+07/26/2022,Go Zachary,????,WBS #19713: [Create] 18700 Identifying the direct cause -  Dev 2,Continue Identifying the root cause,7.00
+07/25/2022,Go Zachary,????,WBS #19713: [Create] 18700 Identifying the direct cause -  Dev 2,Continue Identifying the root cause,7.00
+07/25/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+07/22/2022,Go Zachary,????,WBS #19713: [Create] 18700 Identifying the direct cause -  Dev 2,Continue Identifying the root cause,7.00
+07/22/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+07/21/2022,Go Zachary,????,WBS #19713: [Create] 18700 Identifying the direct cause -  Dev 2,Continue Identifying the root cause,7.00
+07/21/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+07/20/2022,Go Zachary,????,WBS #19713: [Create] 18700 Identifying the direct cause -  Dev 2,Continue Identifying the root cause,7.00
+07/20/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+07/19/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+07/19/2022,Go Zachary,????,WBS #19713: [Create] 18700 Identifying the direct cause -  Dev 2,Continue Identifying the root cause,7.00
+07/18/2022,Go Zachary,????,WBS #19713: [Create] 18700 Identifying the direct cause -  Dev 2,Continue Identifying the root cause,7.00
+07/18/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+07/15/2022,Go Zachary,????,WBS #19713: [Create] 18700 Identifying the direct cause -  Dev 2,Start Identifying the root cause,6.00
+07/15/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai and Brown Bag Session,1.50
+07/14/2022,Go Zachary,????,WBS #19712: [Create] 18700 Debugging and Code tracing - Dev 2,Import data from QA 19240  response,3.00
+07/14/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+07/14/2022,Go Zachary,????,WBS #18318: [GDC] Admin/Others,Import data for 18700 (ED0558T_TBL),4.00
+07/13/2022,Go Zachary,????,WBS #19712: [Create] 18700 Debugging and Code tracing - Dev 2,Update ESNZZ19JuchuSearchSqlMapper(selectSaishinKohoJuchuInfo) queries and create a counter ticket QA 19240 for 18700,2.00
+07/13/2022,Go Zachary,????,WBS #18318: [GDC] Admin/Others,Import data for 18700,4.00
+07/13/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai and mini Furikairi,1.50
+07/12/2022,Go Zachary,????,WBS #19712: [Create] 18700 Debugging and Code tracing - Dev 2, Created queries for ESNZZ19JuchuSearchSqlMapper(selectSaishinKohoJuchuInfo) and created QA 19240 to request data for 18700,3.50
+07/12/2022,Go Zachary,????,WBS #18318: [GDC] Admin/Others,Import data for 18700,3.50
+07/12/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+07/11/2022,Go Zachary,????,WBS #18318: [GDC] Admin/Others,Continue importing  data from FJ,3.25
+07/11/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+07/08/2022,Go Zachary,????,WBS #18318: [GDC] Admin/Others,Continue importing  data from FJ,7.00
+07/08/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+07/07/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+07/07/2022,Go Zachary,????,WBS #18318: [GDC] Admin/Others,Continue importing  data from FJ,3.25
+07/06/2022,Go Zachary,????,WBS #18318: [GDC] Admin/Others,Continue importing  data from FJ,6.75
+07/06/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.75
+07/05/2022,Go Zachary,????,WBS #19712: [Create] 18700 Debugging and Code tracing - Dev 2,"",3.75
+07/05/2022,Go Zachary,????,WBS #18318: [GDC] Admin/Others,Preparing and start importing data from FJ,3.25
+07/05/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+07/04/2022,Go Zachary,????,WBS #19712: [Create] 18700 Debugging and Code tracing - Dev 2,"",7.00
+07/04/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+07/01/2022,Go Zachary,????,WBS #19712: [Create] 18700 Debugging and Code tracing - Dev 2,"",7.00
+07/01/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+06/30/2022,Go Zachary,????,WBS #19712: [Create] 18700 Debugging and Code tracing - Dev 2,"",8.50
+06/30/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+06/29/2022,Go Zachary,????,WBS #19710: [Create] 18700 Input Documents' Analysis - Dev 2,Comparing Input Documents with Code traced,3.00
+06/29/2022,Go Zachary,????,WBS #18318: [GDC] Admin/Others,Fix Eclipse and Code ,7.00
+06/29/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+06/28/2022,Go Zachary,????,WBS #19710: [Create] 18700 Input Documents' Analysis - Dev 2,Comparing Input Documents with Code traced,3.00
+06/28/2022,Go Zachary,????,WBS #18318: [GDC] Admin/Others,Fix Eclipse and Code ,7.00
+06/28/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+06/27/2022,Go Zachary,????,WBS #19710: [Create] 18700 Input Documents' Analysis - Dev 2,Comparing Input Documents with Code traced,3.25
+06/27/2022,Go Zachary,????,WBS #18318: [GDC] Admin/Others,Fix Eclipse and Code,3.75
+06/27/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+06/24/2022,Go Zachary,????,WBS #19710: [Create] 18700 Input Documents' Analysis - Dev 2,Comparing Input Documents with Code traced,8.00
+06/24/2022,Go Zachary,????,WBS #18753: [Rework] 18702 Cause Investigation Rework,"",2.00
+06/24/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+06/23/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+06/23/2022,Go Zachary,????,WBS #19710: [Create] 18700 Input Documents' Analysis - Dev 2,Recheck input documents,8.25
+06/23/2022,Go Zachary,????,WBS #18753: [Rework] 18702 Cause Investigation Rework,"",1.75
+06/22/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+06/22/2022,Go Zachary,????,WBS #19711: [Create] 18700 Design Documents' Analysis - Dev 2,"",9.50
+06/22/2022,Go Zachary,????,WBS #18753: [Rework] 18702 Cause Investigation Rework,"",0.50
+06/21/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,1.50
+06/21/2022,Go Zachary,????,WBS #18753: [Rework] 18702 Cause Investigation Rework,"",6.00
+06/20/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+06/20/2022,Go Zachary,????,WBS #18753: [Rework] 18702 Cause Investigation Rework,"",7.00
+06/17/2022,Go Zachary,????,WBS #18753: [Rework] 18702 Cause Investigation Rework,"",7.00
+06/17/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+06/16/2022,Go Zachary,????,WBS #18750: [Create] 18702 Identifying the direct cause,Update / Check Investigation report while waiting for QA Ticket 18941 to be answered,7.00
+06/16/2022,Go Zachary,????,WBS #18753: [Rework] 18702 Cause Investigation Rework,Update / Check Investigation report while waiting for QA Ticket 18944 to be answered,2.00
+06/16/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+06/15/2022,Go Zachary,????,WBS #18749: [Create] 18702 Debugging and Code tracing,"",0.25
+06/15/2022,Go Zachary,????,WBS #18750: [Create] 18702 Identifying the direct cause,Update / Check Investigation report while waiting for QA Ticket 18944 to be answered,6.75
+06/15/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+06/14/2022,Go Zachary,????,WBS #19711: [Create] 18700 Design Documents' Analysis - Dev 2,"",7.00
+06/14/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+06/13/2022,Go Zachary,????,WBS #19711: [Create] 18700 Design Documents' Analysis - Dev 2,"",3.00
+06/13/2022,Go Zachary,????,WBS #19710: [Create] 18700 Input Documents' Analysis - Dev 2,Reading and Analyzing Operational History log,7.00
+06/13/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+06/09/2022,Go Zachary,????,WBS #18750: [Create] 18702 Identifying the direct cause,"",5.00
+06/09/2022,Go Zachary,????,WBS #18749: [Create] 18702 Debugging and Code tracing,"",2.00
+06/09/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+06/08/2022,Go Zachary,????,WBS #18750: [Create] 18702 Identifying the direct cause,"",3.25
+06/08/2022,Go Zachary,????,WBS #18749: [Create] 18702 Debugging and Code tracing,"",3.75
+06/08/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+06/07/2022,Go Zachary,????,WBS #18749: [Create] 18702 Debugging and Code tracing,"",7.00
+06/07/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+06/06/2022,Go Zachary,????,WBS #18318: [GDC] Admin/Others,Continue updating the data in VM but still lacking a record with a date of 2021/11/26,3.00
+06/06/2022,Go Zachary,????,WBS #18749: [Create] 18702 Debugging and Code tracing,"",6.75
+06/06/2022,Go Zachary,????,WBS #18748: [Create] 18702 Design Documents' Analysis,"",0.25
+06/06/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+06/03/2022,Go Zachary,????,WBS #18318: [GDC] Admin/Others,Update the data in VM was able to partially replicate the incident but still lacking a record with a date of 2021/11/26,5.75
+06/03/2022,Go Zachary,????,WBS #18749: [Create] 18702 Debugging and Code tracing,"",1.25
+06/03/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+06/02/2022,Go Zachary,????,WBS #18318: [GDC] Admin/Others,"Test running profit-web on eclipse but still error for replication demo,  Import DB needed to VM, but when tested it won't run still looking for missing data.",6.75
+06/02/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.75
+06/01/2022,Go Zachary,????,WBS #18318: [GDC] Admin/Others,Reinstalling eclipse with the help of Levie,2.00
+06/01/2022,Go Zachary,????,WBS #18748: [Create] 18702 Design Documents' Analysis,"",5.00
+06/01/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+05/31/2022,Go Zachary,????,WBS #18748: [Create] 18702 Design Documents' Analysis,"",7.00
+05/31/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+05/30/2022,Go Zachary,????,WBS #18321: [GDC] Requirement and Specs Analysis,Read ALSOK  Documents,2.00
+05/30/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+05/30/2022,Go Zachary,????,WBS #18748: [Create] 18702 Design Documents' Analysis,"",5.00
+05/27/2022,Go Zachary,????,WBS #18321: [GDC] Requirement and Specs Analysis,Read ALSOK  Documents,2.00
+05/27/2022,Go Zachary,????,WBS #18747: [Create] 18702 Input Documents' Analysis,"",5.00
+05/27/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+05/26/2022,Go Zachary,????,WBS #18321: [GDC] Requirement and Specs Analysis,Read ALSOK  Documents,2.00
+05/26/2022,Go Zachary,????,WBS #18747: [Create] 18702 Input Documents' Analysis,"",3.00
+05/26/2022,Go Zachary,????,WBS #18602: [Create] 18556 Identifying the direct cause,"",2.00
+05/26/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+05/25/2022,Go Zachary,????,WBS #18321: [GDC] Requirement and Specs Analysis,Read ALSOK  Documents,2.00
+05/25/2022,Go Zachary,????,WBS #18602: [Create] 18556 Identifying the direct cause,"",5.00
+05/25/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+05/24/2022,Go Zachary,????,WBS #18321: [GDC] Requirement and Specs Analysis,Read ALSOK  Documents,2.00
+05/24/2022,Go Zachary,????,WBS #18747: [Create] 18702 Input Documents' Analysis,"",3.00
+05/24/2022,Go Zachary,????,WBS #18602: [Create] 18556 Identifying the direct cause,"",2.00
+05/24/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+05/23/2022,Go Zachary,????,WBS #18321: [GDC] Requirement and Specs Analysis,Read ALSOK  Documents,2.00
+05/23/2022,Go Zachary,????,WBS #18602: [Create] 18556 Identifying the direct cause,"",3.00
+05/23/2022,Go Zachary,????,WBS #18599: [Create] 18556 Input Documents' Analysis,"",1.75
+05/23/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.75
+05/20/2022,Go Zachary,????,WBS #18602: [Create] 18556 Identifying the direct cause,Finish checking and create queries  for data needed for investigation report and create a QA for it. Check Data received from FJ for ticket 18556 and start importing them.,7.00
+05/20/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,"",0.50
+05/19/2022,Go Zachary,????,WBS #18747: [Create] 18702 Input Documents' Analysis,Discuss with Levie about the missing queres in the history log and how to trace it. Start preparing queries for data needed to check what causes the error,2.75
+05/19/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,1.00
+05/18/2022,Go Zachary,????,WBS #18747: [Create] 18702 Input Documents' Analysis,"Start  analyze code checkout yesterday and compare with input documents, got stuck when comparing the code to the operational history due to missing 2 query part in the log.",3.25
+05/18/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+05/17/2022,Go Zachary,????,WBS #18747: [Create] 18702 Input Documents' Analysis,"Read Design document of 18702, Locate the correct committed version to match incident error and update local code.",3.00
+05/17/2022,Go Zachary,????,WBS #18600: [Create] 18556 Design Documents' Analysis,Check Ticket 18709,4.00
+05/17/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+05/16/2022,Go Zachary,????,WBS #18321: [GDC] Requirement and Specs Analysis,Testing TestDriver for API,1.00
+05/16/2022,Go Zachary,????,WBS #18747: [Create] 18702 Input Documents' Analysis,Read Input Documents Looking for the right code (Git),6.00
+05/16/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+05/13/2022,Go Zachary,????,WBS #18601: [Create] 18556 Debugging and Code tracing, Continue with creating Investigation Report for 18556 and Create a QA 18789 request for data.,6.75
+05/13/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.75
+05/12/2022,Go Zachary,????,WBS #18601: [Create] 18556 Debugging and Code tracing,Found the mistakes of my findings the other day  and continue Updating investigation findings,7.00
+05/12/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+05/11/2022,Go Zachary,????,WBS #18747: [Create] 18702 Input Documents' Analysis,Continue reading Input documents to investigate incident,3.50
+05/11/2022,Go Zachary,????,WBS #18600: [Create] 18556 Design Documents' Analysis,Code trace and found out that my initial findings was wrong. Trace again when screen will transfer to ELSN01030101S01.,3.50
+05/11/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+05/10/2022,Go Zachary,????,WBS #18602: [Create] 18556 Identifying the direct cause,Continue Replicating,7.00
+05/10/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,"",0.50
+05/06/2022,Go Zachary,????,WBS #18601: [Create] 18556 Debugging and Code tracing,"Finish Importing all data from FJ 18705. Continue troubleshooting problems with eclipse.""",7.00
+05/06/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+05/05/2022,Go Zachary,????,WBS #18601: [Create] 18556 Debugging and Code tracing,"Got stuck importing data given by FJ it seems to be corrupted. Fixing eclipses (update missing class and building projects uing bash instead of  eclipse)""",7.00
+05/05/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+05/04/2022,Go Zachary,????,WBS #18747: [Create] 18702 Input Documents' Analysis,"",0.50
+05/04/2022,Go Zachary,????,WBS #18602: [Create] 18556 Identifying the direct cause,"Try fixing code by restoring backup if it will still work,  Import data from FJ for ticket 18556",6.25
+05/04/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.75
+05/02/2022,Go Zachary,????,WBS #18747: [Create] 18702 Input Documents' Analysis," Start check code for Ticket 18702, encounter my local code does not match from operational history, tried to update",7.00
+05/02/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+04/29/2022,Go Zachary,????,WBS #18601: [Create] 18556 Debugging and Code tracing,"",1.00
+04/29/2022,Go Zachary,????,WBS #18599: [Create] 18556 Input Documents' Analysis,"",4.00
+04/29/2022,Go Zachary,????,WBS #18321: [GDC] Requirement and Specs Analysis,Read ALSOK  Documents,2.00
+04/29/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+04/28/2022,Go Zachary,????,WBS #18599: [Create] 18556 Input Documents' Analysis,"",4.75
+04/28/2022,Go Zachary,????,WBS #18321: [GDC] Requirement and Specs Analysis,Read ALSOK  Documents,2.00
+04/28/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.75
+04/27/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+04/27/2022,Go Zachary,????,WBS #18321: [GDC] Requirement and Specs Analysis,Read ALSOK  Documents,2.00
+04/27/2022,Go Zachary,????,WBS #18599: [Create] 18556 Input Documents' Analysis,"",3.00
+04/27/2022,Go Zachary,????,WBS #18602: [Create] 18556 Identifying the direct cause,"",2.00
+04/26/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+04/26/2022,Go Zachary,????,WBS #18321: [GDC] Requirement and Specs Analysis,Read ALSOK  Documents,2.00
+04/26/2022,Go Zachary,????,WBS #18601: [Create] 18556 Debugging and Code tracing,"",4.00
+04/26/2022,Go Zachary,????,WBS #18602: [Create] 18556 Identifying the direct cause,"",1.00
+04/25/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+04/25/2022,Go Zachary,????,WBS #18321: [GDC] Requirement and Specs Analysis,Read ALSOK  Documents,2.00
+04/25/2022,Go Zachary,????,WBS #18602: [Create] 18556 Identifying the direct cause,"",5.00
+04/22/2022,Go Zachary,????,WBS #18602: [Create] 18556 Identifying the direct cause,"",5.00
+04/22/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,"",0.50
+04/22/2022,Go Zachary,????,WBS #18321: [GDC] Requirement and Specs Analysis,Read ALSOK  Documents,2.00
+04/21/2022,Go Zachary,????,WBS #18601: [Create] 18556 Debugging and Code tracing,"",4.00
+04/21/2022,Go Zachary,????,WBS #18599: [Create] 18556 Input Documents' Analysis,"",1.00
+04/21/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,"",0.50
+04/21/2022,Go Zachary,????,WBS #18321: [GDC] Requirement and Specs Analysis,Read ALSOK  Documents,2.00
+04/20/2022,Go Zachary,????,WBS #18600: [Create] 18556 Design Documents' Analysis,"",4.00
+04/20/2022,Go Zachary,????,WBS #18599: [Create] 18556 Input Documents' Analysis,"",1.00
+04/20/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,"",0.50
+04/20/2022,Go Zachary,????,WBS #18321: [GDC] Requirement and Specs Analysis,Read ALSOK  Documents,2.00
+04/19/2022,Go Zachary,????,WBS #18601: [Create] 18556 Debugging and Code tracing,"",1.00
+04/19/2022,Go Zachary,????,WBS #18600: [Create] 18556 Design Documents' Analysis,"",4.00
+04/19/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,"",0.50
+04/19/2022,Go Zachary,????,WBS #18321: [GDC] Requirement and Specs Analysis,Read ALSOK  Documents,2.00
+04/18/2022,Go Zachary,????,WBS #18602: [Create] 18556 Identifying the direct cause,"",3.00
+04/18/2022,Go Zachary,????,WBS #18601: [Create] 18556 Debugging and Code tracing,"",2.00
+04/18/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,"",0.50
+04/18/2022,Go Zachary,????,WBS #18321: [GDC] Requirement and Specs Analysis,Read ALSOK  Documents,2.00
+04/13/2022,Go Zachary,????,WBS #18602: [Create] 18556 Identifying the direct cause,"",3.50
+04/13/2022,Go Zachary,????,WBS #18601: [Create] 18556 Debugging and Code tracing,"",0.50
+04/13/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,"",2.00
+04/13/2022,Go Zachary,????,WBS #18321: [GDC] Requirement and Specs Analysis,Read ALSOK  Documents,1.50
+04/12/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,"",0.50
+04/12/2022,Go Zachary,????,WBS #18601: [Create] 18556 Debugging and Code tracing,"",4.50
+04/12/2022,Go Zachary,????,WBS #18599: [Create] 18556 Input Documents' Analysis,"",2.50
+04/11/2022,Go Zachary,????,WBS #18321: [GDC] Requirement and Specs Analysis,Read ALSOK  Documents,2.00
+04/11/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+04/11/2022,Go Zachary,????,WBS #18599: [Create] 18556 Input Documents' Analysis,"",5.00
+04/08/2022,Go Zachary,????,WBS #18321: [GDC] Requirement and Specs Analysis,Read ALSOK  Documents,2.00
+04/08/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+04/08/2022,Go Zachary,????,WBS #18601: [Create] 18556 Debugging and Code tracing,"",5.00
+04/07/2022,Go Zachary,????,WBS #18347: [Rework] 18324 Cause Investigation Rework,"",3.50
+04/07/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+04/07/2022,Go Zachary,????,WBS #18601: [Create] 18556 Debugging and Code tracing,"",3.50
+04/06/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+04/06/2022,Go Zachary,????,WBS #18601: [Create] 18556 Debugging and Code tracing,"",3.50
+04/06/2022,Go Zachary,????,WBS #18599: [Create] 18556 Input Documents' Analysis,"",3.50
+04/05/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+04/05/2022,Go Zachary,????,WBS #18347: [Rework] 18324 Cause Investigation Rework,"",7.00
+04/04/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+04/04/2022,Go Zachary,????,WBS #18347: [Rework] 18324 Cause Investigation Rework,"",7.00
+04/01/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,"",0.50
+04/01/2022,Go Zachary,????,WBS #18347: [Rework] 18324 Cause Investigation Rework,"",7.00
+03/31/2022,Go Zachary,????,WBS #18321: [GDC] Requirement and Specs Analysis,Read ALSOK  Documents,1.00
+03/31/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,"",0.50
+03/31/2022,Go Zachary,????,WBS #18347: [Rework] 18324 Cause Investigation Rework,"",7.00
+03/30/2022,Go Zachary,????,WBS #18321: [GDC] Requirement and Specs Analysis,Read ALSOK  Documents,1.00
+03/30/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,"",0.50
+03/30/2022,Go Zachary,????,WBS #18600: [Create] 18556 Design Documents' Analysis,"",7.00
+03/29/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Meeting with Japan and India,0.25
+03/29/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+03/29/2022,Go Zachary,????,WBS #18321: [GDC] Requirement and Specs Analysis,Read ALSOK  Documents,1.00
+03/29/2022,Go Zachary,????,WBS #18599: [Create] 18556 Input Documents' Analysis,"",5.00
+03/29/2022,Go Zachary,????,WBS #18347: [Rework] 18324 Cause Investigation Rework,"",1.75
+03/28/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,1.00
+03/28/2022,Go Zachary,????,WBS #18321: [GDC] Requirement and Specs Analysis,Read ALSOK  Documents,1.00
+03/28/2022,Go Zachary,????,WBS #18347: [Rework] 18324 Cause Investigation Rework,"",6.50
+03/25/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+03/25/2022,Go Zachary,????,WBS #18347: [Rework] 18324 Cause Investigation Rework,"",7.00
+03/24/2022,Go Zachary,????,WBS #18347: [Rework] 18324 Cause Investigation Rework,"",7.00
+03/24/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+03/23/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.75
+03/23/2022,Go Zachary,????,WBS #18347: [Rework] 18324 Cause Investigation Rework,"",6.75
+03/22/2022,Go Zachary,????,WBS #18347: [Rework] 18324 Cause Investigation Rework,"",7.00
+03/22/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+03/21/2022,Go Zachary,????,WBS #18321: [GDC] Requirement and Specs Analysis,Read ALSOK  Documents,1.00
+03/21/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+03/21/2022,Go Zachary,????,WBS #18347: [Rework] 18324 Cause Investigation Rework,"",7.00
+03/17/2022,Go Zachary,????,WBS #18321: [GDC] Requirement and Specs Analysis,Read Mimamori documents,7.08
+03/17/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.92
+03/17/2022,Go Zachary,????,WBS #18347: [Rework] 18324 Cause Investigation Rework,"",0.50
+03/15/2022,Go Zachary,????,WBS #18321: [GDC] Requirement and Specs Analysis,Read Alsok documents,1.00
+03/15/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+03/15/2022,Go Zachary,????,WBS #18347: [Rework] 18324 Cause Investigation Rework,"",7.00
+03/10/2022,Go Zachary,????,WBS #18347: [Rework] 18324 Cause Investigation Rework,"",4.50
+03/10/2022,Go Zachary,????,WBS #18347: [Rework] 18324 Cause Investigation Rework,"",0.50
+03/10/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Alsok Mimamori Service Meeting,2.00
+03/10/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+03/10/2022,Go Zachary,????,WBS #18321: [GDC] Requirement and Specs Analysis,Continued reviewing ALSOK documents,1.00
+03/08/2022,Go Zachary,????,WBS #18347: [Rework] 18324 Cause Investigation Rework,"",5.00
+03/08/2022,Go Zachary,????,WBS #18321: [GDC] Requirement and Specs Analysis,reviewing ALSOK documents,2.00
+03/08/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+03/04/2022,Go Zachary,????,WBS #18321: [GDC] Requirement and Specs Analysis,Read ALSOK Documents,6.75
+03/04/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.75
+03/03/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Mimamori Tag_App Meeting,1.50
+03/03/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+03/03/2022,Go Zachary,????,WBS #18321: [GDC] Requirement and Specs Analysis,Read ALSOK Mimamori Services Documents,5.50
+03/02/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+03/02/2022,Go Zachary,????,WBS #18321: [GDC] Requirement and Specs Analysis,Reading UI ALSOK Mimamori Services,7.00
+03/01/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+03/01/2022,Go Zachary,????,WBS #18343: [Create] 18324 Identifying the direct cause,Update Root cause of error (18324) with table names and upload it to QA #18438 and Waiting for Final Answer ,2.00
+03/01/2022,Go Zachary,????,WBS #18321: [GDC] Requirement and Specs Analysis,Read ALSOK Mimamori Services Documents,5.00
+02/28/2022,Go Zachary,????,WBS #18321: [GDC] Requirement and Specs Analysis,Reading Mimamori documents,7.00
+02/28/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+02/23/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+02/23/2022,Go Zachary,????,WBS #18321: [GDC] Requirement and Specs Analysis,Reading Coding convention for Java and Mimamori documents,7.00
+02/22/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+02/22/2022,Go Zachary,????,WBS #18321: [GDC] Requirement and Specs Analysis,Read Mimamori documents,1.00
+02/22/2022,Go Zachary,????,WBS #18343: [Create] 18324 Identifying the direct cause,"",7.00
+02/21/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,"",0.50
+02/21/2022,Go Zachary,????,WBS #18321: [GDC] Requirement and Specs Analysis,Reading Coding convention for Java ,1.00
+02/21/2022,Go Zachary,????,WBS #18343: [Create] 18324 Identifying the direct cause,"",7.00
+02/18/2022,Go Zachary,????,WBS #18343: [Create] 18324 Identifying the direct cause,"",0.50
+02/18/2022,Go Zachary,????,WBS #18342: [Create] 18324 Debugging and Code tracing,"",3.50
+02/16/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+02/16/2022,Go Zachary,????,WBS #18342: [Create] 18324 Debugging and Code tracing,"",3.50
+02/16/2022,Go Zachary,????,WBS #18344: [Create] 18324 Input Documents' Analysis,"",1.50
+02/16/2022,Go Zachary,????,WBS #18341: [Create] 18324 Design Documents' Analysis,"",2.00
+02/15/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+02/15/2022,Go Zachary,????,WBS #18342: [Create] 18324 Debugging and Code tracing,"",4.00
+02/15/2022,Go Zachary,????,WBS #18341: [Create] 18324 Design Documents' Analysis,"",1.00
+02/15/2022,Go Zachary,????,WBS #18344: [Create] 18324 Input Documents' Analysis,"",2.00
+02/14/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+02/14/2022,Go Zachary,????,WBS #18342: [Create] 18324 Debugging and Code tracing,"",6.50
+02/14/2022,Go Zachary,????,WBS #18344: [Create] 18324 Input Documents' Analysis,"",0.50
+02/11/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+02/11/2022,Go Zachary,????,WBS #18341: [Create] 18324 Design Documents' Analysis,"",4.00
+02/11/2022,Go Zachary,????,WBS #18344: [Create] 18324 Input Documents' Analysis,"",3.00
+02/10/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+02/10/2022,Go Zachary,????,WBS #18262: [Create] 18247  Design Documents' Analysis,"",7.00
+02/09/2022,Go Zachary,????,WBS #18317: [GDC] Meetings,Asakai,0.50
+02/09/2022,Go Zachary,????,WBS #18261: [Create] 18247 Debugging and Code tracing,"",3.00
+02/09/2022,Go Zachary,????,WBS #18262: [Create] 18247  Design Documents' Analysis,"",3.50
+02/09/2022,Go Zachary,????,WBS #18264: [Create] 18247 Input Documents' Analysis,"",0.50
