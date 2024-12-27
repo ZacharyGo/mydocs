@@ -1,0 +1,76 @@
+/* Copyright (c) 2015, 2020, Oracle and/or its affiliates. */
+/* All rights reserved.*/
+
+function FndSecureRestXhrFactory()
+{
+  this.Init();
+}
+
+AdfObject.createSubclass(FndSecureRestXhrFactory, AdfRestXhrFactory);
+
+/**
+ * Injects the security auth tokens into the request header
+ * @Override
+ */
+FndSecureRestXhrFactory.prototype.getXhr = function (xhr, properties) {
+    //get the source of the event
+    var clientIdKeys=properties[AdfRestXhrFactory.CLIENT_ID_LIST_KEY];
+    if (clientIdKeys && clientIdKeys.length>0) {
+    var clientId = clientIdKeys[0];
+    var componentUI = AdfPage.PAGE.findComponent(clientId);
+    var secureInputSearchUI = componentUI;
+    if (secureInputSearchUI) {
+     //go up the tree to find the secure input search panelgrouplayout
+        while (secureInputSearchUI) {
+            if ( (secureInputSearchUI.getId() == 'SIS_pgl1') || (secureInputSearchUI.getId().indexOf("FLEXINPSRH") >= 0 ) ) {
+                break;
+            }
+
+            secureInputSearchUI = secureInputSearchUI.getParent();
+        }   
+        if (secureInputSearchUI) {
+            if ( (secureInputSearchUI.getId() == 'SIS_pgl1') || (secureInputSearchUI.getId().indexOf("FLEXINPSRH") >= 0 ) ) {
+                var reqHeaderMap = secureInputSearchUI.getProperty("oracle.fnd.applcore.SecureInputSearch_tokens");
+                // var FNDSTAG="FndSTag";
+                // Bug# 27797752 - Remove special handling for IE browser where FndSTag is added to URL query string
+                
+                // Build the request headers
+                for (var key in reqHeaderMap){
+                    xhr.setRequestHeader(key, reqHeaderMap[key]);
+                }
+                //Bug 28493851 - TABLE BASED CLIENT LOV IS NOT SHOWING ALL THE RECORDS BEYOND 500 IN THE DFF UI
+                // Search filter parameters starts supporting all complex queries from version 2 onwards,so use REST-Framework-version > 1 in Http header
+                // but then higher version has better error handling  e.g version 4 returns error in "JSON" format instead of String.
+                
+                //BUG 31796924 - [FIN] CURRENCY LOV DOES NOT SHOW TYPE IN SUGGESTIONS FOR THE DIFFERENT LISTED CURRENCIES
+                //Change is made specifically for Flexfields by Checking for Id="FLEXINPSRH" for DFF/KFF and Client Id="efSecIsId" for EFF
+                //For InputSearchFactory DFF/KFF SecureInputSearch Id includes "FLEXINPSRH" in BaseDynamicComponentFcatory.getId() method.
+                //For EFF SecureInputSearch id name includes "efSecIsId" in UIModelerPageService.createComboboxLOVInputSearchDocumentFragment() method.
+                
+                if ( (secureInputSearchUI.getId() == 'SIS_pgl1' && clientId.indexOf("efSecIsId") >= 0) || (secureInputSearchUI.getId().indexOf("FLEXINPSRH") >= 0) ) {
+                     xhr.setRequestHeader("REST-Framework-Version","4");
+                }
+            }
+        }
+        else
+        {
+          // Could this be a component with a fnd:searchSuggestBehavior attached?
+          if (FndSearchSuggestBehavior) 
+          {
+            var behavior = FndSearchSuggestBehavior._findBehaviorFromComponent(componentUI);
+            if (behavior)
+            {
+              if (behavior._RESTClientToken)
+              {
+                xhr.setRequestHeader("Authorization", behavior._RESTClientToken);
+              }
+            }
+          }        
+        }
+    }
+    }    
+    return xhr;    
+}
+
+// Register as a factory class with AdfRestXhrFactory
+AdfRestXhrFactory.register(new FndSecureRestXhrFactory());

@@ -1,0 +1,537 @@
+AdfUIComponents.createComponentClass("AdfRichSelectOneChoice", {"componentType":"oracle.adf.RichSelectOneChoice", "propertyKeys":[{"name":"changed", "type":"Boolean", "default":false}, {"name":"changedDesc", "type":"String"}, {"name":"autoSubmit", "type":"Boolean", "default":false}, {"name":"accessKey", "type":"String"}, {"name":"contentStyle", "type":"String"}, {"name":"helpTopicId", "type":"String"}, {"name":"disabled", "type":"Boolean", "default":false, "secured":true}, {"name":"label", "type":"String"}, 
+{"name":"readOnly", "type":"Boolean", "default":false, "secured":true}, {"name":"showRequired", "type":"Boolean", "default":false}, {"name":"simple", "type":"Boolean", "default":false}, {"name":"inlineStyle", "type":"String"}, {"name":"styleClass", "type":"String"}, {"name":"shortDesc", "type":"String"}, {"name":"unsecure", "type":"Object", "secured":true}, {"name":"visible", "type":"Boolean", "default":true}, {"name":"valuePassThru", "type":"Boolean", "default":false, "secured":true}, {"name":"editable", 
+"type":"String", "default":"inherit"}, {"name":"unselectedLabel", "type":"String"}, {"name":"mode", "type":"String", "default":"default"}], "superclass":AdfUISelectOne});
+
+AdfRichUIPeer.createPeerClass(AdfDhtmlSelectOneListbasePeer, "AdfDhtmlSelectOneChoicePeer");
+AdfDhtmlSelectOneChoicePeer.InitSubclass = function() {
+  AdfRichUIPeer.addComponentPropertyGetters(this, AdfUIEditableValue.SUBMITTED_VALUE, AdfUISelectOne.SELECT_ITEMS, AdfRichSelectOneChoice.LABEL);
+  AdfRichUIPeer.addComponentPropertyChanges(this, AdfRichSelectOneChoice.LABEL, AdfRichSelectOneChoice.DISABLED);
+  AdfRichUIPeer.addComponentEventHandlers(this, AdfUIInputEvent.BLUR_EVENT_TYPE, AdfUIInputEvent.FOCUS_EVENT_TYPE, AdfUIInputEvent.CLICK_EVENT_TYPE, AdfUIInputEvent.MOUSE_DOWN_EVENT_TYPE, AdfUIInputEvent.KEY_DOWN_EVENT_TYPE, AdfUIInputEvent.KEY_PRESS_EVENT_TYPE);
+  if (!AdfAgent.AGENT.isTouchFirstDevice()) {
+    AdfRichUIPeer.addComponentEventHandlers(this, AdfUIInputEvent.MOUSE_IN_EVENT_TYPE);
+  }
+  this._CONTENT_ID = "content";
+  this._COMPACT = "compact";
+  this._DROPDOWN_ID = "drop";
+  this._POPUP_ID = "pop";
+  this._POPUP_WRAPPER_ID = "popWrap";
+  this._SPACER_ID = "sp";
+  this._POPUP_PANEL_ID = "_afrSelectOnePopupPanel";
+  this._SCROLL_STYLE = "p_AFScroll";
+  this._SELECTED_STYLE_CLASS = "p_AFSelected";
+  this._HIGHLIGHTED_STYLE_CLASS = "p_AFHighlighted";
+  this._TEMP_OPTION_KEY = "_adfTmpOpt";
+  this._KEYBOARD_TYPE_DELAY = 250;
+};
+AdfDhtmlSelectOneChoicePeer.prototype.InitDomElement = function(component, domElement) {
+  this.StashOldValue(component, domElement);
+  this._adjustWidth(component, domElement);
+};
+AdfDhtmlSelectOneChoicePeer.prototype.LazyInitialize = function(component, domElement) {
+  AdfDhtmlSelectOneChoicePeer.superclass.LazyInitialize.call(this, component, domElement);
+  var domNode = AdfDhtmlEditableValuePeer.getContentNode(component, domElement);
+  if (domNode) {
+    if (!this._isCompactOrCustomModeSupported(component)) {
+      AdfRichUIPeer.addEventHandlerToDomInstance(AdfDhtmlSelectOneChoicePeer, domNode, AdfDhtmlLookAndFeel.CHANGE_EVENT_TYPE);
+      var options = domNode.options;
+      if (options) {
+        var length = options.length;
+        var i;
+        for (i = 0;i < length;i++) {
+          if (options[i].title == null || options[i].title == "") {
+            options[i].title = options[i].text;
+          }
+        }
+      }
+    } else {
+      if (!component.getReadOnly()) {
+        domNode.setAttribute("aria-expanded", "false");
+      }
+    }
+  }
+};
+AdfDhtmlSelectOneChoicePeer.prototype.HandleComponentBlur = function(componentEvent) {
+  var component = componentEvent.getSource();
+  var domElement = this.getDomElement();
+  if (!this.isPopupVisible(component, AdfDhtmlSelectOneChoicePeer._POPUP_PANEL_ID) && this._isCompactOrCustomModeSupported(component)) {
+    this.ValidateAndStashNewValue(component, domElement);
+  }
+};
+AdfDhtmlSelectOneChoicePeer.prototype.HandleComponentMouseDown = function(componentEvent) {
+  if (componentEvent.getEventPhase() == AdfBaseEvent.AT_TARGET_PHASE) {
+    var component = componentEvent.getSource();
+    if (this._isCompactOrCustomModeSupported(component) && !component.getDisabled() && !component.getReadOnly()) {
+      var nativeEvent = componentEvent.getNativeEvent();
+      var agent = AdfAgent.AGENT;
+      var eventTarget = agent.getEventTarget(nativeEvent);
+      var domElement = AdfRichUIPeer.getDomElementForComponent(component);
+      var dropdownElement = agent.getElementById(AdfRichUIPeer.createSubId(component.getClientId(), AdfDhtmlSelectOneChoicePeer._DROPDOWN_ID));
+      var islabelClickedInCompactMode = this._isCompact(component) && eventTarget == AdfDhtmlSelectOneChoicePeer._getLabelElementInCompactMode(component);
+      var isContentElementClicked = eventTarget == AdfDhtmlEditableValuePeer.getContentNode(component);
+      var isDropDownElementCLicked = eventTarget == dropdownElement || eventTarget.parentNode == dropdownElement;
+      if (islabelClickedInCompactMode || isContentElementClicked || isDropDownElementCLicked) {
+        if (!this.isPopupVisible(component, AdfDhtmlSelectOneChoicePeer._POPUP_PANEL_ID)) {
+          this._showPopupPanel(component);
+        } else {
+          this.hidePopup(component, AdfDhtmlSelectOneChoicePeer._POPUP_PANEL_ID);
+        }
+      } else {
+        if (domElement == eventTarget || AdfDomUtils.isAncestor(domElement, eventTarget)) {
+          if (this.isPopupVisible(component, AdfDhtmlSelectOneChoicePeer._POPUP_PANEL_ID)) {
+            this.hidePopup(component, AdfDhtmlSelectOneChoicePeer._POPUP_PANEL_ID);
+          }
+        }
+      }
+      AdfFocusUtils.focusElement(this._getFocusElement(component));
+    }
+  }
+};
+AdfDhtmlSelectOneChoicePeer.prototype.HandleComponentClick = function(componentEvent) {
+  if (componentEvent.getEventPhase() == AdfBaseEvent.AT_TARGET_PHASE) {
+    AdfDhtmlSelectOneChoicePeer.superclass.HandleComponentClick.call(this, componentEvent);
+    var component = componentEvent.getSource();
+    if (this._isCompactOrCustomModeSupported(component)) {
+      var target = componentEvent.getNativeEventTarget();
+      if (this.IsItemEnabled(target)) {
+        var newValue = target.getAttribute(AdfDhtmlSelectOneListbasePeer._ITEM_VALUE_EXPANDO);
+        AdfDomUtils.removeCSSClassName(target, AdfDhtmlSelectOneChoicePeer._HIGHLIGHTED_STYLE_CLASS);
+        var domElement = this.getDomElement();
+        this.SetDisplayValue(component, domElement, newValue);
+        this.ValidateAndStashNewValue(component, domElement, newValue);
+        this._returnToDropDown(component);
+      }
+    }
+  }
+};
+AdfDhtmlSelectOneChoicePeer.prototype.HandleComponentKeyUp = function(componentEvent) {
+  if (AdfBaseEvent.AT_TARGET_PHASE == componentEvent.getEventPhase() && AdfAgent.IE_PLATFORM == AdfAgent.AGENT.getPlatform() && AdfKeyStroke.ENTER_KEY == AdfAgent.AGENT.getKeyCode(componentEvent.getNativeEvent())) {
+    var component = componentEvent.getSource();
+    componentEvent.cancel();
+    AdfDhtmlEditableValuePeer.GetContentNode(component).blur();
+    AdfFocusUtils.focusElement(this._getFocusElement(component));
+  }
+};
+AdfDhtmlSelectOneChoicePeer.prototype.HandleComponentKeyDown = function(componentEvent) {
+  if (componentEvent.getEventPhase() == AdfBaseEvent.AT_TARGET_PHASE) {
+    var component = componentEvent.getSource();
+    if (this._isCompactOrCustomModeSupported(component) && !component.getReadOnly() && !component.getDisabled()) {
+      var eventTarget = componentEvent.getNativeEventTarget();
+      var evt = componentEvent.getNativeEvent();
+      var keyCode = AdfAgent.AGENT.getKeyCode(evt);
+      var domElement = this.getDomElement();
+      var curValue = this.GetSubmittedValue(component, domElement);
+      var oldSelectElement = this.FindItemElementWithValue(component, curValue);
+      switch(keyCode) {
+        case AdfKeyStroke.ESC_KEY:
+          componentEvent.cancel();
+          this._returnToDropDown(component);
+          break;
+        case AdfKeyStroke.ENTER_KEY:
+          if (this.isPopupVisible(component, AdfDhtmlSelectOneChoicePeer._POPUP_PANEL_ID)) {
+            this.ValidateAndStashNewValue(component, domElement, curValue);
+            this._returnToDropDown(component);
+          } else {
+            this._showPopupPanel(component);
+          }
+          break;
+        case AdfKeyStroke.TAB_KEY:
+          if (this.isPopupVisible(component, AdfDhtmlSelectOneChoicePeer._POPUP_PANEL_ID)) {
+            this._returnToDropDown(component);
+          }
+          break;
+        case AdfKeyStroke.ARROWDOWN_KEY:
+          if (evt.altKey) {
+            this._showPopupPanel(component);
+            break;
+          }
+        ;
+        case AdfKeyStroke.ARROWUP_KEY:
+          if ((eventTarget.tagName == "A" || eventTarget.tagName == "INPUT") && !this.isPopupVisible(component, AdfDhtmlSelectOneChoicePeer._POPUP_PANEL_ID)) {
+            this._showPopupPanel(component);
+            componentEvent.cancel();
+            break;
+          }
+          var selectElement;
+          if (keyCode == AdfKeyStroke.ARROWUP_KEY) {
+            selectElement = this.GetPreviousEnabledItem(oldSelectElement);
+          } else {
+            selectElement = this.GetNextEnabledItem(oldSelectElement);
+          }
+          if (!selectElement) {
+            selectElement = this.GetFirstEnabledItem(component);
+          }
+          var popupIsVisible = this.isPopupVisible(component, AdfDhtmlSelectOneChoicePeer._POPUP_PANEL_ID);
+          if (selectElement != oldSelectElement) {
+            var newValue = "" + selectElement.getAttribute(AdfDhtmlSelectOneListbasePeer._ITEM_VALUE_EXPANDO);
+            if (popupIsVisible) {
+              this.SetDisplayValue(component, domElement, newValue);
+            } else {
+              this.ValidateAndStashNewValue(component, domElement, newValue);
+            }
+          }
+          if (popupIsVisible) {
+            componentEvent.cancel();
+          }
+          break;
+        case AdfKeyStroke.BACKSPACE_KEY:
+          if (component._keyboardValue !== undefined) {
+            component._keyboardValue = component._keyboardValue.slice(0, -1);
+          }
+          break;
+      }
+    }
+    if (AdfAgent.IE_PLATFORM == AdfAgent.AGENT.getPlatform() && AdfKeyStroke.ENTER_KEY == AdfAgent.AGENT.getKeyCode(componentEvent.getNativeEvent())) {
+      componentEvent.cancel();
+      AdfFocusUtils.focusElement(this._getFocusElement(component));
+    }
+  }
+};
+AdfDhtmlSelectOneChoicePeer.prototype.HandleComponentKeyPress = function(componentEvent) {
+  var component = this.getComponent();
+  if (this._isCompactOrCustomModeSupported(component) && !component.getReadOnly() && !component.getDisabled()) {
+    var evt = componentEvent.getNativeEvent();
+    var keyCode = AdfAgent.AGENT.getKeyCode(evt);
+    if (keyCode == AdfKeyStroke.SPACE_KEY) {
+      componentEvent.cancel();
+    }
+    if (component._keyboardValue === undefined) {
+      component._keyboardValue = "";
+    }
+    component._keyboardValue += evt.key;
+    this._selectItemOnTyping(component, component._keyboardValue);
+    var page = AdfPage.PAGE;
+    if (component._keyboardTimer) {
+      page.rescheduleTimer(component._keyboardTimer, AdfDhtmlSelectOneChoicePeer._KEYBOARD_TYPE_DELAY);
+    } else {
+      component._keyboardTimer = page.scheduleTimer(this, AdfDhtmlSelectOneChoicePeer._clearKeyboardValue, component, AdfDhtmlSelectOneChoicePeer._KEYBOARD_TYPE_DELAY);
+    }
+  }
+};
+AdfDhtmlSelectOneChoicePeer.prototype.HandleDomChange = function(component, domEvent) {
+  var domElement = this.getDomElement();
+  if (!this._isNativeSelectNotSupported(domElement)) {
+    this.ValidateAndStashNewValue(component, domElement);
+  }
+};
+AdfDhtmlSelectOneChoicePeer.prototype.PopupClosed = function(component, contentDom, popupId) {
+  if (popupId == AdfDhtmlSelectOneChoicePeer._POPUP_PANEL_ID) {
+    var popupWrapperId = AdfRichUIPeer.CreateSubId(component.getClientId(), AdfDhtmlSelectOneChoicePeer._POPUP_WRAPPER_ID);
+    var parentDom = AdfAgent.AGENT.getElementById(popupWrapperId);
+    parentDom.appendChild(contentDom);
+    var domElement = AdfRichUIPeer.getDomElementForComponent(component);
+    var contentNode = AdfDhtmlEditableValuePeer.GetContentNode(component, domElement);
+    contentNode.setAttribute("aria-expanded", "false");
+    contentNode.removeAttribute("aria-activedescendant");
+    AdfFocusUtils.focusElement(this._getFocusElement(component));
+  }
+};
+AdfDhtmlSelectOneChoicePeer.prototype.GetNoteWindowAlignmentNode = function(component, rootNode) {
+  if (!this._isNativeSelectNotSupported(rootNode)) {
+    return this._getFocusElement(component);
+  } else {
+    var alignmentNode = this._getFocusElement(component);
+    if (this._isCompact(component)) {
+      return alignmentNode;
+    }
+    return alignmentNode.parentNode;
+  }
+};
+AdfDhtmlSelectOneChoicePeer.prototype.GetComponentMode = function(component) {
+  return component.getMode();
+};
+AdfDhtmlSelectOneChoicePeer.prototype.SetDisplayValue = function(component, domElement, newValue) {
+  var contentNode = AdfDhtmlEditableValuePeer.GetContentNode(component, domElement);
+  if (contentNode == null) {
+    return;
+  }
+  var readOnly = component.getReadOnly();
+  AdfAssert.assertString(newValue);
+  if (!readOnly) {
+    var newSelectedItem = this.FindItemElementWithValue(component, newValue);
+    if (this._isCompactOrCustomModeSupported(component)) {
+      var curValue = this.GetSubmittedValue(component, domElement);
+      var oldSelectElement = this.FindItemElementWithValue(component, curValue);
+      this.SelectItemElement(component, newSelectedItem, oldSelectElement);
+      var textValue = "";
+      if (newSelectedItem != null) {
+        var selectedItemId = newSelectedItem.getAttribute("id");
+        contentNode.setAttribute("aria-activedescendant", selectedItemId);
+        if (newSelectedItem.firstChild) {
+          textValue = newSelectedItem.firstChild.nodeValue;
+        }
+      }
+      if (!this._isCompact(component)) {
+        var hiddenContentNodes = AdfAgent.AGENT.getElementsByName(component.getClientId());
+        hiddenContentNodes[0].value = newValue;
+        contentNode.value = textValue;
+        contentNode.title = textValue;
+        return;
+      }
+    } else {
+      if (newSelectedItem) {
+        contentNode.title = newSelectedItem.title;
+      }
+    }
+    contentNode.value = newValue;
+  }
+};
+AdfDhtmlSelectOneChoicePeer.prototype.ComponentValueChanged = function(component, domElement, newValue, oldValue) {
+  this._removeComponentRenderedNoSelectItem(component, newValue);
+  AdfDhtmlSelectOneChoicePeer.superclass.ComponentValueChanged.call(this, component, domElement, newValue, oldValue);
+};
+AdfDhtmlSelectOneChoicePeer.prototype.GetSubmittedValue = function(component, domElement) {
+  if (this._isCompact(component) || !this._isNativeSelectNotSupported(domElement) || component.getReadOnly()) {
+    return AdfDhtmlSelectOneChoicePeer.superclass.GetSubmittedValue.call(this, component, domElement);
+  }
+  var hiddenContentNodes = AdfAgent.AGENT.getElementsByName(component.getClientId());
+  return hiddenContentNodes[0].value;
+};
+AdfDhtmlSelectOneChoicePeer.prototype.GetItemElements = function(component) {
+  if (this._isCompactOrCustomModeSupported(component)) {
+    return AdfDhtmlSelectOneChoicePeer.superclass.GetItemElements.call(this, component);
+  }
+  var domElement = this.getDomElement();
+  var domNode = AdfDhtmlEditableValuePeer.GetContentNode(component, domElement);
+  if (domNode == null) {
+    return null;
+  }
+  return domNode.options;
+};
+AdfDhtmlSelectOneChoicePeer.prototype.GetComponentSelectItems = function(component, domElement) {
+  if (this._isCompactOrCustomModeSupported(component)) {
+    return AdfDhtmlSelectOneChoicePeer.superclass.GetComponentSelectItems.call(this, component, domElement);
+  }
+  var domNode = AdfDhtmlEditableValuePeer.GetContentNode(component, domElement);
+  if (domNode == null) {
+    return null;
+  }
+  var selectItems = new Array;
+  var i;
+  var options = domNode.options;
+  var length = options.length;
+  for (i = 0;i < length;i++) {
+    selectItems[i] = new AdfSelectItem;
+    selectItems[i].setValue(options[i].value);
+    selectItems[i].setLabel(options[i].text);
+    selectItems[i].setDisabled(options[i].disabled);
+  }
+  return selectItems;
+};
+AdfDhtmlSelectOneChoicePeer.prototype.FindItemElementWithValue = function(component, itemValue) {
+  if (this._isCompactOrCustomModeSupported(component)) {
+    return AdfDhtmlSelectOneChoicePeer.superclass.FindItemElementWithValue.call(this, component, itemValue);
+  }
+  var domElement = this.getDomElement();
+  var domNode = AdfDhtmlEditableValuePeer.GetContentNode(component, domElement);
+  if (domNode == null) {
+    return null;
+  }
+  var selectItems = new Array;
+  var i;
+  var options = domNode.options;
+  var length = options.length;
+  for (i = 0;i < length;i++) {
+    if (options[i].value == itemValue) {
+      return options[i];
+    }
+  }
+  return null;
+};
+AdfDhtmlSelectOneChoicePeer.prototype.GetInlineEditor = function(event) {
+  return AdfDhtmlSimpleLabelEditor.getInlineEditor();
+};
+AdfDhtmlSelectOneChoicePeer.prototype.SetBusy = function(isBusy) {
+  AdfAssert.assertBoolean(isBusy);
+  var component = this.getComponent();
+  AdfAssert.assert(!component.getDisabled());
+  AdfAssert.assert(!component.isDead());
+  AdfDomUtils.addOrRemoveCSSClassName(isBusy, this.getDomElement(), AdfRichUIPeer.DISABLED_STYLECLASS);
+};
+AdfDhtmlSelectOneChoicePeer.prototype.ComponentDisabledChanged = function(component, domElement, newValue, oldValue) {
+  var domNode = AdfDhtmlEditableValuePeer.GetContentNode(component, domElement);
+  if (newValue == true) {
+    AdfDomUtils.addCSSClassName(domElement, AdfRichUIPeer.DISABLED_STYLECLASS);
+    domNode.setAttribute("disabled", "true");
+  } else {
+    AdfDomUtils.removeCSSClassName(domElement, AdfRichUIPeer.DISABLED_STYLECLASS);
+    domNode.removeAttribute("disabled");
+  }
+};
+AdfDhtmlSelectOneChoicePeer.prototype._adjustWidth = function(component, domElement) {
+  var isNativeSelect = !this._isNativeSelectNotSupported(domElement);
+  if (component.getReadOnly() || isNativeSelect || this._isCompact(component)) {
+    return;
+  }
+  var contentNode = AdfDhtmlEditableValuePeer.getContentNode(component, domElement);
+  if (contentNode.style.cssText.indexOf("width") !== -1) {
+    var dropButton = document.getElementById(AdfRichUIPeer.createSubId(component.getClientId(), AdfDhtmlSelectOneChoicePeer._DROPDOWN_ID));
+    var newWidth = AdfDhtmlSelectOneChoicePeer._getComputedWidth(contentNode) - AdfDhtmlSelectOneChoicePeer._getComputedWidth(dropButton);
+    AdfDomUtils.addInlineStyle(contentNode, "width: " + newWidth + "px", true);
+  }
+};
+AdfDhtmlSelectOneChoicePeer._getComputedWidth = function(element) {
+  var computedStyle = getComputedStyle(element);
+  if (AdfAgent.AGENT.getPlatform() != AdfAgent.IE_PLATFORM && computedStyle.getPropertyValue("box-sizing") == "border-box") {
+    return parseFloat(computedStyle.getPropertyValue("width"));
+  }
+  return parseFloat(computedStyle.getPropertyValue("width")) + parseFloat(computedStyle.getPropertyValue("padding-left")) + parseFloat(computedStyle.getPropertyValue("padding-right")) + parseFloat(computedStyle.getPropertyValue("border-left-width")) + parseFloat(computedStyle.getPropertyValue("border-right-width"));
+};
+AdfDhtmlSelectOneChoicePeer.prototype._removeComponentRenderedNoSelectItem = function(component, newValue) {
+  var newSelectedItem = this.FindItemElementWithValue(component, newValue);
+  if (newSelectedItem) {
+    var isRemovableItem = AdfAgent.AGENT.getAttribute(newSelectedItem, AdfDhtmlSelectOneChoicePeer._TEMP_OPTION_KEY);
+    if (!isRemovableItem) {
+      var optionsParent = this.GetItemElementsParent(component);
+      var firstOption = this.GetFirstEnabledItem(component);
+      isRemovableItem = AdfAgent.AGENT.getAttribute(firstOption, AdfDhtmlSelectOneChoicePeer._TEMP_OPTION_KEY);
+      if (isRemovableItem) {
+        optionsParent.removeChild(firstOption);
+      }
+    }
+  }
+};
+AdfDhtmlSelectOneChoicePeer.prototype._returnToDropDown = function(component) {
+  var clientId = component.getClientId();
+  var popupId = AdfRichUIPeer.CreateSubId(component.getClientId(), AdfDhtmlSelectOneChoicePeer._POPUP_ID);
+  var popupNode = AdfAgent.AGENT.getElementById(popupId);
+  this.hidePopup(component, AdfDhtmlSelectOneChoicePeer._POPUP_PANEL_ID);
+  AdfFocusUtils.focusElement(this._getFocusElement(component));
+};
+AdfDhtmlSelectOneChoicePeer.prototype._showPopupPanel = function(component) {
+  AdfObject.ensureClassInitialization(AdfRichPopup);
+  AdfObject.ensureClassInitialization(AdfDhtmlPopupWindow);
+  var clientId = component.getClientId();
+  var spacerId = AdfRichUIPeer.CreateSubId(clientId, AdfDhtmlSelectOneChoicePeer._SPACER_ID);
+  var spacerNode = AdfAgent.AGENT.getElementById(spacerId);
+  var popupContentId = AdfRichUIPeer.CreateSubId(clientId, AdfDhtmlSelectOneChoicePeer._POPUP_ID);
+  var contentDom = AdfAgent.AGENT.getElementById(popupContentId);
+  var popupHints = {};
+  popupHints[AdfRichPopup.HINT_ALIGN] = AdfRichPopup.ALIGN_AFTER_START;
+  if (!this._isCompact(component)) {
+    var contentNode = AdfDhtmlEditableValuePeer.getContentNode(component);
+    contentNode.setAttribute("aria-expanded", "true");
+    var textId = AdfRichUIPeer.CreateSubId(clientId, AdfDhtmlSelectOneChoicePeer._CONTENT_ID);
+    var textNode = AdfAgent.AGENT.getElementById(textId);
+    if (textNode.disabled) {
+      return;
+    }
+    if (AdfDomUtils.containsCSSClassName(contentDom, AdfDhtmlSelectOneChoicePeer._SCROLL_STYLE)) {
+      spacerNode.style.width = textNode.parentNode.offsetWidth - 23 + "px";
+    } else {
+      spacerNode.style.width = textNode.parentNode.offsetWidth - 7 + "px";
+    }
+    popupHints[AdfDhtmlPopupHints.TYPE] = AdfDhtmlPopupHints.TYPE_MENU;
+    popupHints[AdfDhtmlPopupHints.AUTODISMISS] = AdfDhtmlPopupHints.AUTODISMISS_MENU;
+    popupHints[AdfDhtmlPopupHints.FOCUS] = false;
+    popupHints[AdfRichPopup.HINT_ALIGN_ID] = textId;
+    popupHints[AdfDhtmlPopupWindow.HINT_ANIMATE] = AdfRichPopup.ANIMATE_FALSE;
+  } else {
+    popupHints[AdfDhtmlPopupHints.TYPE] = AdfDhtmlPopupHints.TYPE_MENU;
+    popupHints[AdfDhtmlPopupHints.AUTODISMISS] = AdfDhtmlPopupHints.AUTODISMISS_MENU;
+    popupHints[AdfDhtmlPopupHints.FOCUS] = false;
+    popupHints[AdfRichPopup.HINT_ALIGN_ID] = AdfRichUIPeer.CreateSubId(clientId, AdfDhtmlSelectOneChoicePeer._DROPDOWN_ID);
+  }
+  contentDom.parentNode.removeChild(contentDom);
+  this.showPopup(component, contentDom, popupHints, AdfDhtmlSelectOneChoicePeer._POPUP_PANEL_ID);
+  if (AdfDomUtils.containsCSSClassName(contentDom, AdfDhtmlSelectOneChoicePeer._SCROLL_STYLE)) {
+    var domElement = this.getDomElement();
+    var curValue = this.GetSubmittedValue(component, domElement);
+    var selectElement = this.FindItemElementWithValue(component, curValue);
+    this.SelectItemElement(component, selectElement);
+  }
+};
+AdfDhtmlSelectOneChoicePeer.prototype._isCompact = function(component) {
+  var mode = this.GetComponentMode(component);
+  return mode == AdfDhtmlSelectOneChoicePeer._COMPACT;
+};
+AdfDhtmlSelectOneChoicePeer.prototype._isNativeSelectNotSupported = function(domElement) {
+  if (!domElement) {
+    domElement = this.getDomElement();
+  }
+  return domElement.getElementsByTagName("select").length == 0;
+};
+AdfDhtmlSelectOneChoicePeer.prototype._isCompactOrCustomModeSupported = function(component) {
+  return this._isCompact(component) || this._isNativeSelectNotSupported();
+};
+AdfDhtmlSelectOneChoicePeer.prototype._getFocusElement = function(component) {
+  var elementId;
+  if (this._isCompact(component)) {
+    elementId = AdfRichUIPeer.CreateSubId(component.getClientId(), AdfDhtmlSelectOneChoicePeer._DROPDOWN_ID);
+  } else {
+    var subId = AdfDhtmlSelectOneChoicePeer._CONTENT_ID;
+    elementId = AdfRichUIPeer.CreateSubId(component.getClientId(), subId);
+  }
+  return AdfAgent.AGENT.getElementById(elementId);
+};
+AdfDhtmlSelectOneChoicePeer._clearKeyboardValue = function(component) {
+  delete component._keyboardTimer;
+  delete component._keyboardValue;
+};
+AdfDhtmlSelectOneChoicePeer.prototype._selectItemOnTyping = function(component, keyboardValue) {
+  var selectItems = component.getSelectItems();
+  var count = selectItems.length;
+  var selectedIndex = this._selectedItemIndex(selectItems);
+  var searchStartIndex = selectedIndex;
+  if (keyboardValue.trim().length == 1) {
+    searchStartIndex = selectedIndex + 1;
+  }
+  var matched = this._selectMatchingItem(selectItems, searchStartIndex, count, keyboardValue);
+  if (!matched) {
+    this._selectMatchingItem(selectItems, 0, searchStartIndex, keyboardValue);
+  }
+};
+AdfDhtmlSelectOneChoicePeer.prototype._selectMatchingItem = function(selectItems, startIndex, endIndex, matchText) {
+  var selectItem = null;
+  var domElement = this.getDomElement();
+  var component = this.getComponent();
+  for (var i = startIndex;i < endIndex;i++) {
+    selectItem = selectItems[i];
+    if (!selectItem.isDisabled() && AdfDhtmlSelectOneChoicePeer._matcher(selectItem.getLabel(), matchText)) {
+      var newValue = "" + selectItem.getValue();
+      this.SetDisplayValue(component, domElement, newValue);
+      return true;
+    }
+  }
+  return false;
+};
+AdfDhtmlSelectOneChoicePeer.prototype._selectedItemIndex = function(selectItems) {
+  var selectItem = null;
+  var domElement = this.getDomElement();
+  var component = this.getComponent();
+  var selectedItemValue = this.GetSubmittedValue(component, domElement);
+  var count = selectItems.length;
+  for (var i = 0;i < count;i++) {
+    selectItem = selectItems[i];
+    if (selectItem.getValue() == selectedItemValue) {
+      return i;
+    }
+  }
+  return 0;
+};
+AdfDhtmlSelectOneChoicePeer._matcher = function(itemLabel, matchText) {
+  return itemLabel.toLocaleUpperCase().indexOf(matchText.toUpperCase()) === 0;
+};
+AdfDhtmlSelectOneChoicePeer.prototype.GetItemElementsParent = function(component) {
+  var clientId = component.getClientId();
+  if (this._isCompactOrCustomModeSupported(component)) {
+    return AdfAgent.AGENT.getElementById(AdfRichUIPeer.CreateSubId(clientId, AdfDhtmlSelectOneChoicePeer._POPUP_ID));
+  } else {
+    return AdfAgent.AGENT.getElementById(AdfRichUIPeer.CreateSubId(clientId, AdfDhtmlSelectOneChoicePeer._CONTENT_ID));
+  }
+};
+AdfDhtmlSelectOneChoicePeer.prototype.IsItemEnabled = function(element) {
+  if (element.nodeName == "OPTION") {
+    return !element.hasAttribute("disabled");
+  }
+  return AdfDhtmlSelectOneChoicePeer.superclass.IsItemEnabled.call(this, element);
+};
+AdfDhtmlSelectOneChoicePeer._getLabelElementInCompactMode = function(component) {
+  AdfAssert.assert(component.getMode() == AdfDhtmlSelectOneChoicePeer._COMPACT, "component not in compact mode");
+  var dropdownElementId = AdfRichUIPeer.createSubId(component.getClientId(), AdfDhtmlSelectOneChoicePeer._DROPDOWN_ID);
+  var labelElem = document.querySelector("label[for\x3d'" + dropdownElementId + "']");
+  if (!labelElem) {
+    var contentNode = AdfDhtmlEditableValuePeer.getContentNode(component);
+    var labelElem = AdfDhtmlEditableValuePeer.GetLabelElement(contentNode);
+  }
+  return labelElem;
+};

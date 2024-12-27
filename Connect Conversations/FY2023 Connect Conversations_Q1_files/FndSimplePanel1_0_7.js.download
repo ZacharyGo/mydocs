@@ -1,0 +1,218 @@
+/* Copyright (c) 2009, 2021, Oracle and/or its affiliates. */
+/* All rights reserved.*/
+/*
+** IMPORTANT: If you make changes in this file, you MUST increment the file name
+ ** and adjust any references to it.  This is because web browsers cache js
+ ** files based on their name.
+ **
+ ** @author Rohit Kumar Singh.
+ **
+ **   
+ ** Method to inject the javascript which enables the simple panel to stick
+ ** to the top of the viewport on page scroll.
+ **
+ ** 7/19/2017   rohitsi     Bug 25689987 - ENABLING STICKY HEADER BY DEFAULT 
+ **                         Bug 25704666 - STICKY HEADER NEED TO BE ADJUSTED WITH HORIZONTAL BROWSER SCROLBAR
+ **                         Bug 26360407 - WITH STICKY HEADER ENABLED, SOMETIMES UNABLE TO SCROLL DOWN PAGE AND ITS JUMPY 
+ **                         Bug 26110503 - DISABLE STICKY HEADER BELOW HEIGHT < 768 
+ **                         Bug 25714745 - REL13 SIEMENS POC: STICKY HEADER:PERSISTENCE ISSUE WHEN NAVIGATING B/W SUBTABS 
+ **                         Bug 25705168 - REL13 SIEMENS POC: STICKY HEADER:TRANSLUCENCY ISSUE FOR STICKER HEADER 
+ **                         BUG 31340765 - WHEN WE OPEN A SUCCESSION PLAN THE SCROLL BAR IS NOT AT THE TOP OF THE PAGESev 1 SR
+ **                         Bug 32310685 - WHEN WE OPEN A SUCCESSION PLAN THE SCROLL BAR IS NOT AT THE TOP OF THE PAGE ON IPAD 
+ ** 
+ */
+ 
+ // added variable which store client ID of parent Container on current page. which will be used to compare when new page opens.
+var previousParentClientID = '';
+//added variable to test if the agent is iPad,
+var isIpadAgent = /iPad/.test(navigator.userAgent);
+
+
+var simplePanelscroll = simplePanelscroll || 
+{
+};
+simplePanelscroll = {
+    facetContainer : null, parentContainer : null, threshold : null, vThreshold : null, kioskMode : false
+}
+
+simplePanelscroll.initSimplePanelscroll = function (facetContainer, parentContainer, kioskMode) {
+    simplePanelscroll.facetContainer = AdfPage.PAGE.findComponent(facetContainer);
+    simplePanelscroll.parentContainer = AdfPage.PAGE.findComponent(parentContainer);
+    simplePanelscroll.kioskMode = kioskMode;
+    AdfAgent.AGENT.addBubbleEventListener(document, "scroll", simplePanelscroll.scrollHandler);
+     
+   
+    /*
+     *  On page load or region load ADF tries to focus on the first actionable element
+        on the region. When Sticky header is turned off, the event from ADF tries to
+        focus on the buttons in the simple panel and hence the browser scrolls the page.
+        With the sticky header turned on, unfortunately, the browser doesn't have to scroll 
+        to set the focus on the buttons, and hence the scroll position is retained. 
+        Set timeout changes added for bug BUG 31340765 does not work as expected for ipad and some browsers.
+        
+        To handle issue of the scroll, added change for scroll to top for all devices and browsers.
+        Change is to understand the page change via checking the parentContainer clientID which only changes 
+        when new page is opened and then force scroll to top on the new page.
+     * */        
+        
+    if (simplePanelscroll && simplePanelscroll.parentContainer) {
+        // client id of the parentContainer new page opened
+        var currentParentClientID = simplePanelscroll.parentContainer._clientId;
+        if (previousParentClientID !== currentParentClientID) {
+            var scrollElem = document.scrollingElement || document.documentElement;
+            scrollElem.scrollTop = 0;
+        }
+        previousParentClientID = currentParentClientID;
+    }
+}
+
+simplePanelscroll.scrollHandler = function () {
+    if (null != simplePanelscroll.parentContainer && null != AdfRichUIPeer.getDomElementForComponent(simplePanelscroll.parentContainer)) {
+        var rect = AdfRichUIPeer.getDomElementForComponent(simplePanelscroll.parentContainer).getBoundingClientRect();
+        var ySimplePanel = 0;
+        var wSimplePanel = 0;
+        ySimplePanel = rect.top;
+        wSimplePanel = rect.width;
+        var facetContainerDOM = AdfRichUIPeer.getDomElementForComponent(simplePanelscroll.facetContainer);
+        var browserWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+        var browserHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+        
+        //some iPad devices does not return correct value of screen height and width using window.innerHeight and window.innerWidth
+        if(isIpadAgent)
+        {
+                browserWidth = screen.width;
+                browserHeight = screen.height;
+        }
+        //enable sticky header only if viewport width > 1024 and vice versa
+        if (ySimplePanel < 0 && !facetContainerDOM.classList.contains('sticky-header') && browserWidth >= 1024 && browserHeight >= 768) {
+            var spPanelWidth = wSimplePanel + (simplePanelscroll.kioskMode ? 0 : 20);
+            facetContainerDOM.style.width = spPanelWidth + "px";
+            facetContainerDOM.parentElement.parentElement.style.height = facetContainerDOM.parentElement.parentElement.clientHeight + 'px';
+            facetContainerDOM.classList.add('sticky-header');
+        }
+        else if (facetContainerDOM.classList.contains('sticky-header') && (ySimplePanel >= 0 || (ySimplePanel < 0 && browserWidth < 1024) || (ySimplePanel < 0 && browserHeight < 768))) {
+            facetContainerDOM.style.width = "";
+            facetContainerDOM.parentElement.parentElement.style.height = '';
+            facetContainerDOM.classList.remove('sticky-header');
+        }
+    }
+}
+
+AdfAgent.AGENT.addBubbleEventListener(AdfPage.PAGE.getDomWindow(), "resize", function () {
+    if (null != simplePanelscroll.parentContainer && null != AdfRichUIPeer.getDomElementForComponent(simplePanelscroll.parentContainer)) {
+        var rect = AdfRichUIPeer.getDomElementForComponent(simplePanelscroll.parentContainer).getBoundingClientRect();
+        var ySimplePanel = rect.top;
+        var browserWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+        var browserHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+        
+        //some iPad devices does not return correct value of screen height and width using window.innerHeight and window.innerWidth
+        if(isIpadAgent)
+        {
+                browserWidth = screen.width;
+                browserHeight = screen.height;
+        }
+        
+        //should not check whether stickyheader is enabled, since resize can also trigger sticky header.
+        if (ySimplePanel < 0) {
+            switch (simplePanelscroll.threshold) {
+                case 0:
+                    if (!(browserWidth < 1024))
+                        assignThreshold();
+                    break;
+                case 1:
+                    if (!(browserWidth >= 1024 && browserWidth < 1280))
+                        assignThreshold();
+                    break;
+                case 2:
+                    if (!(browserWidth >= 1280 && browserWidth < 1440))
+                        assignThreshold();
+                    break;
+                case 3:
+                    if (!(browserWidth >= 1440 && browserWidth < 1600))
+                        assignThreshold();
+                    break;
+                case 4:
+                    if (!(browserWidth >= 1600 && browserWidth < 1920))
+                        assignThreshold();
+                    break;
+                case 5:
+                    if (!(browserWidth >= 1920 && browserWidth < 2560))
+                        assignThreshold();
+                    break;
+                case 6:
+                    if (!(browserWidth >= 2560 && browserWidth < 3200))
+                        assignThreshold();
+                    break;
+                case 7:
+                    if (!(browserWidth >= 3200 && browserWidth < 3800))
+                        assignThreshold();
+                    break;
+                case 8:
+                    if (!(browserWidth >= 3800))
+                        assignThreshold();
+                    break;
+                default :
+                    assignThreshold();
+            }
+        }
+        switch (simplePanelscroll.vThreshold) {
+            case 0:
+                if (!(browserHeight < 768))
+                    assignThreshold();
+                break;
+            case 1:
+                if (!(browserHeight >= 768))
+                    assignThreshold();
+                break;
+            default :
+                assignThreshold();
+        }
+    }
+});
+
+function assignThreshold() {
+    var rect = AdfRichUIPeer.getDomElementForComponent(simplePanelscroll.parentContainer).getBoundingClientRect();
+    var ySimplePanel = rect.top;
+    var browserWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+    var browserHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+    
+    //some iPad devices does not return correct value of screen height and width using window.innerHeight and window.innerWidth
+        if(isIpadAgent)
+        {
+                browserWidth = screen.width;
+                browserHeight = screen.height;
+        }
+    
+    if (browserWidth < 1024)
+        simplePanelscroll.threshold = 0;
+    else if (browserWidth >= 1024 && browserWidth < 1280)
+        simplePanelscroll.threshold = 1;
+    else if (browserWidth >= 1280 && browserWidth < 1440)
+        simplePanelscroll.threshold = 2;
+    else if (browserWidth >= 1440 && browserWidth < 1600)
+        simplePanelscroll.threshold = 3;
+    else if (browserWidth >= 1600 && browserWidth < 1920)
+        simplePanelscroll.threshold = 4;
+    else if (browserWidth >= 1920 && browserWidth < 2560)
+        simplePanelscroll.threshold = 5;
+    else if (browserWidth >= 2560 && browserWidth <= 3200)
+        simplePanelscroll.threshold = 6;
+    else if (browserWidth >= 3200 && browserWidth <= 3800)
+        simplePanelscroll.threshold = 7;
+    else if (browserWidth >= 3800)
+        simplePanelscroll.threshold = 8;
+
+    if (browserHeight < 768)
+        simplePanelscroll.vThreshold = 0;
+    else if (browserHeight >= 768)
+        simplePanelscroll.vThreshold = 1;
+
+    //resize event can also trigger sticky header.
+    simplePanelscroll.scrollHandler();
+    //re-evaluate the width of simple panel container when it is sticky
+    if (ySimplePanel < 0) {
+        var facetContainerDOM = AdfRichUIPeer.getDomElementForComponent(simplePanelscroll.facetContainer);
+        var spWidth = rect.width + 20;
+        facetContainerDOM.style.width = spWidth + "px";
+    }
+}

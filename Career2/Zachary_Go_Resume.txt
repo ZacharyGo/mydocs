@@ -1,0 +1,305 @@
+Zachary Go
+Software Engineer
+
+Cebu City, Philippies 6000
+09177091613
+ZSGoEmpire@gmail.com
+
+Skills
+
+Systems Engineering
+
+Sales and marketing
+
+Staff Management
+
+Project Management
+
+Operations management
+
+Software
+
+C#
+Intermediate
+
+Java
+Intermediate
+
+ASP.net,
+Elementary
+
+Microsoft SQL,
+Upper intermediate
+
+MySQL,
+Upper intermediate
+
+Oracle
+Intermediate
+
+HTML
+Elementary
+
+CSS
+Elementary
+
+JavaScript
+Beginner
+
+Angular
+Beginner
+
+LiveCode
+Upper intermediate
+
+COBOL
+Upper intermediate
+
+Pascal
+Upper intermediate
+
+C,C++
+Elementary
+
+Visual FoxPro
+Upper intermediate
+
+Clipper
+Upper intermediate
+
+DBase
+Upper intermediate
+
+Assembly Language
+Upper intermediate
+
+Professional Summary
+
+Energetic [Job Title] offering wealth of experience in technical troubleshooting and problem-solving business issues. Hardworking, educated and willing to go extra mile to complete any task. Skilled programming in [Software] to develop [Type] applications. Dedicated Application Developer adept at creating new programs and solutions for [Industry] clients. Knowledgeable in [Area of expertise]. Successful technology career history comprising more than [Number] years. Motivated [Job Title] proficient in [Type] programming languages. Background in [Area of expertise]. Provides high level of service to clients in custom application development for mobile devices and proprietary customizations. Versatile developer with over [Number] years of leveraging software engineering and implementing new technologies to maximize development efficiency. Conducting extensive market and consumer research to translate into application features. Acquiring and applying new complex technology concepts in short period of time. Meticulous [Job Title] maintaining highly functional digital systems for uninterrupted workflows and consistent productivity. Oversees routine maintenance checks and software update schedules to reduce network downtime and likelihood of security compromises. Loves collaborating with customers and teammates to develop and implement creative technical solutions to challenging problems. Detail-oriented Computer Systems Engineer committed to improving system design and operations for reliable workflow management. Researches and implements budget-conscious security and encryption solutions to protect user privacy and increase overall network health. Creates easy-to-follow guidelines and troubleshooting documentation for non-technical staff. To seek and maintain full-time position that offers professional challenges utilizing interpersonal skills, excellent time management and problem-solving skills. Hardworking and passionate job seeker with strong organizational skills eager to secure entry-level [Job Title] position. Ready to help team achieve company goals. Detail-oriented team player with strong organizational skills. Ability to handle multiple projects simultaneously with a high degree of accuracy. Organized and dependable candidate successful at managing multiple priorities with a positive attitude. Willingness to take on added responsibilities to meet team goals.
+
+Work History
+
+March 2021 - Current
+WeServ Systems International - Cebu City, Philippines
+Application Systems Engineer / Consultant
+
+Used ASP.NET, JavaScript and SQL Server to develop new applications.
+Wrote and maintained custom scripts to increase system efficiency and performance time.
+
+February 2016 - February 2021
+Cerenimbus Inc.  - Cebu City, Philippines
+Software Developer
+
+Collaborated with project managers to select ambitious, but realistic coding milestones on pre-release software project development.
+Updated old code bases to modern development standards, improving functionality.
+Discussed issues with team members to provide resolution and apply best practices.
+Contributed ideas and suggestions in team meetings and delivered updates on deadlines, designs, and enhancements.
+Corrected, modified and upgraded software to improve performance.
+Coordinated deployments of new software, feature updates and fixes.
+Estimated work hours and tracked progress using Scrum methodology.
+Supervised work of programmers, designers and technicians, assigned tasks and monitored performance against targets.
+Designed reusable and reliable code for use within distributed cloud environments.
+Revised, modularized and updated old code bases to modern development standards, reducing operating costs, and improving functionality.
+Translated customer requirements into written use cases.
+Documented technical workflows and knowledge to educate newly hired employees.
+Developed software for desktop operating systems.
+Create tool to test API
+Developed software for desktop and mobile operating systems.
+
+January 2016 - February 2016
+Alorica (Seasonal Account) - Cebu City, Philippines
+Customer Service Representative
+
+Maintained customer satisfaction with forward-thinking strategies focused on addressing customer needs and resolving concerns.
+Answered constant flow of customer calls with minimal wait times.
+Responded to customer requests for products, services, and company information.
+Answered customer telephone calls promptly to avoid on-hold wait times.
+Offered advice and assistance to customers, paying attention to special needs or wants.
+Handled customer inquiries and suggestions courteously and professionally.
+Actively listened to customers, handled concerns quickly and escalated major issues to supervisor.
+Clarified customer issues and determined root cause of problems to resolve product or service complaints.
+Processed customer service orders promptly to increase customer satisfaction.
+Participated in team meetings and training sessions to stay informed about product updates and changes.
+Provided excellent customer care by responding to requests, assisting with product selection and handling ordering functions.
+Calculated correct order totals, updated accounts, and maintained detailed records for inventory management.
+Responded to customer requests, offering excellent support and tailored recommendations to address needs.
+Educated customers about billing, payment processing and support policies and procedures.
+Maintained up-to-date knowledge of product and service changes.
+Reached out to customers after completed sales to suggest additional service or product purchases.
+
+September 2015 - January 2016
+Tech Mahindra  - Cebu City, Philippines
+Customer Service Representative (Contractual)
+· Maintained customer satisfaction with forward-thinking strategies focused on addressing customer needs and resolving concerns.
+· Answered constant flow of customer calls with minimal wait times.
+· Responded to customer requests for products, services, and company information.
+· Answered customer telephone calls promptly to avoid on-hold wait times.
+· Offered advice and assistance to customers, paying attention to special needs or wants.
+· Handled customer inquiries and suggestions courteously and professionally.
+· Actively listened to customers, handled concerns quickly and escalated major issues to supervisor.
+· Clarified customer issues and determined root cause of problems to resolve product or service complaints.
+· Processed customer service orders promptly to increase customer satisfaction.
+· Participated in team meetings and training sessions to stay informed about product updates and changes.
+· Provided excellent customer care by responding to requests, assisting with product selection and handling ordering functions.
+· Calculated correct order totals, updated accounts, and maintained detailed records for inventory management.
+· Responded to customer requests, offering excellent support and tailored recommendations to address needs.
+· Educated customers about billing, payment processing and support policies and procedures.
+· Maintained up-to-date knowledge of product and service changes.
+Reached out to customers after completed sales to suggest additional service or product purchases
+
+March 2010 - May 2015
+AXA Philippines - Cebu City, Philippines
+Unit Head
+
+Managed purchasing, sales, marketing and customer account operations efficiently.
+Recruited, hired, and trained initial personnel, working to establish key internal functions and outline scope of positions for new organization.
+Reported issues to higher management with great detail.
+Identified and qualified customer needs and negotiated and closed profitable projects with high success rate.
+Trained and guided team members to maintain high productivity and performance metrics.
+Interacted well with customers to build connections and nurture relationships.
+Observed each employee's individual strengths and initiated mentoring program to improve areas of weakness.
+Implemented innovative programs to increase employee loyalty and reduce turnover.
+Cultivated and strengthened lasting client relationships using strong issue resolution and dynamic communication skills.
+Assisted in recruiting, hiring and training of team members.
+Trained new employees on proper protocols and customer service standards.
+Handled problematic customers and clients to assist lower-level employees and maintain excellent customer service.
+
+October 2009 - March 2010
+Convergys - Cebu City, Philippines
+Technical /Customer Support Associate
+
+Answered product and service questions, suggesting other offerings to attract potential customers.
+Responded to customer requests for products, services, and company information.
+Offered advice and assistance to customers, paying attention to special needs or wants.
+Demonstrated computer skills for data entry and answered broad variety of inquiries.
+Researched [Type] system for customer inquiries, product descriptions and specifications.
+Answered customer telephone calls promptly to avoid on-hold wait times.
+Leveraged sales expertise to promote products and capitalize on upsell opportunities.
+Answered constant flow of customer calls with minimal wait times.
+Maintained customer satisfaction with forward-thinking strategies focused on addressing customer needs and resolving concerns.
+Updated account information to maintain customer records.
+Processed customer service orders promptly to increase customer satisfaction.
+Tracked customer service cases and updated service software with customer information.
+Actively listened to customers, handled concerns quickly and escalated major issues to supervisor.
+Participated in team meetings and training sessions to stay informed about product updates and changes.
+Clarified customer issues and determined root cause of problems to resolve product or service complaints.
+Handled customer inquiries and suggestions courteously and professionally.
+
+February 2008 - September 2009
+Pru Life U.K. - Cebu City, Philippines
+Financial Consultant (Insurance Agent)
+
+Strengthened communication skills through regular interactions with others.
+Developed and maintained courteous and effective working relationships.
+Proven ability to learn quickly and adapt to new situations.
+Organized and detail-oriented with a strong work ethic.
+Paid attention to detail while completing assignments.
+Proved successful working within tight deadlines and a fast-paced environment.
+Cultivated interpersonal skills by building positive relationships with others.
+Excellent communication skills, both verbal and written.
+Applied effective time management techniques to meet tight deadlines.
+Demonstrated a high level of initiative and creativity while tackling difficult tasks.
+Identified issues, analyzed information and provided solutions to problems.
+Delivered services to customer locations within specific timeframes.
+Managed time efficiently in order to complete all tasks within deadlines.
+Demonstrated respect, friendliness and willingness to help wherever needed.
+
+September 2004 - January 2009
+Central Lumber Corporation - Cebu City, Philippines
+IT Manager
+
+Managed network and system performance, conducting troubleshooting, security patching, and maintenance.
+Oversaw IT department operations and training.
+Conferred with executives to advise and plan for short-term and long-term IT system upgrade needs.
+Led technology selection and rollout, focusing on organizational planning and supplier service-level agreements.
+Oversaw daily performance of computer systems and immediately responded to [Type] issues to keep network up and running.
+Collaborated with other departments to help meet IT needs and properly integrate and secure systems.
+Understood key product management roadmap objectives and requirements to develop product technology strategy.
+Demonstrated familiarity with latest hardware, software and networking technology.
+Communicated with executive team and CEO to maximize development efficiencies and resolve technology issues.
+Built, repaired and installed computer-related hardware based on deployment procedures.
+Coordinated IT operations activities to deliver smooth flow of daily business needs.
+Assisted in development of long-term strategies to grow department and resources.
+Coordinated technical training and personal development classes for staff members.
+Customized and repaired technology based on staff requests.
+Interacted and negotiated with vendors, outsourcers and contractors to secure products and services.
+Oversaw development and implementation of improvements to support and network operations.
+Reviewed and assessed architecture design, implementation, testing and deployment needs to identify project requirements and costs.
+Communicated regularly with users concerning data exchange and technology integration.
+Supported implementation of warehouse management system software applications to enable centralized management of tasks.
+Identified computer hardware and network system issues, performing troubleshooting techniques for remediation.
+Played key role in on-going network design, reevaluation and optimization to keep pace with company growth.
+
+July 2003 - September 2004
+AccountMate, Inc. – Philippines - Cebu City, Philippines
+Software Engineer
+
+Worked with software development and testing team members to design and develop robust solutions to meet client requirements for functionality, scalability, and performance.
+Coordinated with other engineers to evaluate and improve software and hardware interfaces.
+Identified and documented project changes with proactive budget oversight.
+Conducted regression testing and submitted observations to development team.
+Updated old code bases to modern development standards, improving functionality.
+
+January 1999 - July 2003
+Metro Electronics Center - Cebu City, Philippines
+Proprietor
+
+Grew business by developing business plans, hiring staff and obtaining initial investments.
+Performed statistical analyses to gather data for operational and forecast team needs.
+Entered income and expense details into business databases to track purchases and address variances.
+Provided customer service on accounts and resolved problems.
+Studied market to determine optimal pricing of goods and capitalize on emerging opportunities.
+Prepared annual budgets with controls to prevent overages.
+Evaluated suppliers to maintain cost controls and improve operations.
+Developed and managed relationships with vendors and suppliers.
+
+November 1996 - June 1998
+Institute of Advanced Computer Technology - Cebu City, Philippines
+Software Engineer (Team Leader)
+
+Demonstrated creativity and resourcefulness through the development of innovative solutions.
+Proven ability to develop and implement creative solutions to complex problems.
+Delivered services to customer locations within specific timeframes.
+Cultivated interpersonal skills by building positive relationships with others.
+Demonstrated a high level of initiative and creativity while tackling difficult tasks.
+Identified issues, analyzed information and provided solutions to problems.
+Worked effectively in fast-paced environments.
+Self-motivated, with a strong sense of personal responsibility.
+Passionate about learning and committed to continual improvement.
+Learned and adapted quickly to new technology and software applications.
+Gained extensive knowledge in data entry, analysis and reporting.
+Worked well in a team setting, providing support and guidance.
+Resolved problems, improved operations and provided exceptional service.
+Proved successful working within tight deadlines and a fast-paced environment.
+Assisted with day-to-day operations, working efficiently and productively with all team members.
+Managed time efficiently in order to complete all tasks within deadlines.
+Strengthened communication skills through regular interactions with others.
+
+June 1992 - March 1996
+Microchips Inc. - Cebu City, Philippines
+Instructor (Part-time)
+
+Developed applications for customers
+Coached interns and new employees to boost departmental efficiency.
+Analyzed, reviewed and revised programs to increase operating efficiency.
+Developed in-house applications designed for company needs.
+Provided computer programming subject matter expertise to project students
+Evaluated and revised lesson plans and course content to achieve student-centered learning.
+Tracked student progress, frequently checking in with struggling students and identifying root causes of problems.
+Applied various teaching aids to minimize learning gaps and instruct and motivate students.
+Oversaw curriculum development and implementation in alignment with best practices.
+Increased student participation via engaging lectures and assignments.
+Developed and clearly presented classroom rules, guidelines and objectives.
+Facilitated learning with creation of engaging written and oral assignments.
+Promoted classroom safety, collaboration and best practices.
+Observed and adopted new techniques from skilled instructors and lecturers.
+Optimized learning plans based on student performance and feedback.
+
+Education
+
+June 1990 - March 1996
+University of San Carlos  Cebu City, Philippines
+Bachelor of Science Computer Engineering
+
+BPI Information Systems Institute Makati, Metro Manila, Philippines
+No Degree COBOL / CICS Mainframe

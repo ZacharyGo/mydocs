@@ -1,0 +1,1551 @@
+AdfUIComponents.createComponentClass("AdfRichChooseColor", {"componentType":"oracle.adf.RichChooseColor", "propertyKeys":[{"name":"inlineStyle", "type":"String"}, {"name":"styleClass", "type":"String"}, {"name":"shortDesc", "type":"String"}, {"name":"unsecure", "type":"Object", "secured":true}, {"name":"visible", "type":"Boolean", "default":true}, {"name":"colorData", "type":"Array"}, {"name":"customColorData", "type":"Array"}, "defaultColor", {"name":"width", "type":"Number", "default":7}, {"name":"lastUsedVisible", 
+"type":"Boolean", "default":true}, {"name":"defaultVisible", "type":"Boolean", "default":true}, {"name":"customVisible", "type":"Boolean", "default":true}], "superclass":AdfUIChoose});
+
+AdfRichChooseColor.prototype.GetChanges = function() {
+  var changes = AdfRichChooseColor.superclass.GetChanges.call(this);
+  var customColors = changes[AdfRichChooseColor.CUSTOM_COLOR_DATA];
+  if (customColors) {
+    changes[AdfRichChooseColor.CUSTOM_COLOR_DATA] = customColors.join("$afr$");
+  }
+  return changes;
+};
+
+AdfRichUIPeer.createPeerClass(AdfRichUIPeer, "AdfDhtmlChooseColorBasePeer");
+AdfDhtmlChooseColorBasePeer.__LAST_USED_COLOR = "lastUsedColor";
+AdfDhtmlChooseColorBasePeer.__COLOR_VALUE = "colorValue";
+AdfDhtmlChooseColorBasePeer.prototype.handleUpdateFromInputComponent = function(chooseComponent, propertyName, newValue) {
+  chooseComponent.setProperty(propertyName, newValue);
+};
+AdfDhtmlChooseColorBasePeer.InitSubclass = function() {
+  AdfObject.ensureClassInitialization(AdfRichChooseColor);
+  AdfObject.ensureClassInitialization(AdfRichInputColor);
+  AdfObject.ensureClassInitialization(AdfUIValue);
+  AdfObject.ensureClassInitialization(AdfDhtmlInputColorPeer);
+  this._colorFormat = new TrColorConverter(["#RRGGBB"], true);
+  AdfRichUIPeer.addComponentEventHandlers(this, AdfUIInputEvent.CLICK_EVENT_TYPE, AdfUIInputEvent.KEY_DOWN_EVENT_TYPE, AdfUIInputEvent.KEY_UP_EVENT_TYPE, AdfDialogEvent.EVENT_TYPE);
+  AdfRichUIPeer.addComponentPropertyChanges(this, AdfDhtmlChooseColorBasePeer.__COLOR_VALUE, AdfDhtmlChooseColorBasePeer.__LAST_USED_COLOR, AdfRichChooseColor.DEFAULT_COLOR, AdfRichChooseColor.CUSTOM_COLOR_DATA);
+  AdfRichUIPeer.addComponentPropertyGetters(this, AdfRichChooseColor.CUSTOM_COLOR_DATA, AdfRichChooseColor.COLOR_DATA, AdfRichChooseColor.WIDTH, AdfDhtmlChooseColorBasePeer.__LAST_USED_COLOR, AdfRichChooseColor.DEFAULT_COLOR);
+  this._SWATCH_EXPANDO = "_adfSw";
+  this._BUTTON_EXPANDO = "_adfSwBtn";
+  this._COLOR_VALUE_EXPANDO = "_adfClr";
+  this._LAST_USED_COLOR_BTN = "LucBtn";
+  this._DEFAULT_COLOR_BTN = "DfcBtn";
+  this._CUSTOM_COLOR_BTN = "cstcBtn";
+  this._CUSTOM_ROW_ID = "ccRow";
+  this._CUSTOM_PANEL_WRAPPER_ID = "ccWrap";
+  this._CUSTOM_PANEL = "ccPnl";
+  this._CUSTOM_DLG_DRAG_ID = "tb";
+  this._SELECTION_UNKNOWN = 0;
+  this._SELECTION_OLD_SWATCH_KNOWN = 1;
+  this._SELECTION_NEW_SWATCH_KNOWN = 2;
+  this._SELECTION_SWATCHES_KNOWN = 3;
+  this._SELECTION_PROCESSED = 4;
+  this._prevSwatchSelectionMap = new Object;
+  this._curSwatchSelectionMap = new Object;
+  this._selectionStateMap = new Object;
+  this._STANDARD_SWATCH_TABLE_ID = "stdTbl";
+  this._initCustomPanelHandlerClass();
+};
+AdfDhtmlChooseColorBasePeer._convertToColorString = function(colorObj) {
+  if (colorObj == null) {
+    return null;
+  }
+  return this._colorFormat.getAsString(colorObj);
+};
+AdfDhtmlChooseColorBasePeer._convertToColorObj = function(colorString) {
+  if (colorString == null) {
+    return null;
+  }
+  return this._colorFormat.getAsObject(colorString);
+};
+AdfDhtmlChooseColorBasePeer.parse0To255 = function(str) {
+  AdfAssert.assertString(str, "parse0To255: The input color value must be a string type. ");
+  var decimalChars = "0123456789";
+  var charCount = str.length;
+  for (var i = 0;i < charCount;i++) {
+    if (decimalChars.indexOf(str.charAt(i)) == -1) {
+      return null;
+    }
+  }
+  var result = parseInt(str);
+  if (!isNaN(result) && result >= 0 && result <= 255) {
+    return result;
+  } else {
+    return null;
+  }
+};
+AdfDhtmlChooseColorBasePeer.parseHexColor = function(str) {
+  AdfAssert.assertString(str, "parseHexColor: The input color value must be a string type. ");
+  var returnValue = str;
+  if (str.length != 6) {
+    returnValue = null;
+  } else {
+    var hexDigits = "0123456789ABCDEFabcdef";
+    for (var i = 0;i < 6;i++) {
+      if (hexDigits.indexOf(str.charAt(i)) == -1) {
+        returnValue = null;
+        break;
+      }
+    }
+  }
+  if (returnValue != null) {
+    returnValue = parseInt(str, 16);
+  }
+  return returnValue;
+};
+AdfDhtmlChooseColorBasePeer.prototype.InitDomElement = function(component, domElement) {
+  AdfDhtmlChooseColorBasePeer.superclass.InitDomElement.call(this, component, domElement);
+  var inputColor = AdfDhtmlInputChooseBindingUtils.getInputComponent(component.getClientId());
+  if (inputColor != null) {
+    inputColor.getPeer().initChooseComponentValue(inputColor);
+  }
+};
+AdfDhtmlChooseColorBasePeer.prototype._getColorFromSwatch = function(swatch) {
+  var color = swatch.getAttribute(AdfDhtmlChooseColorBasePeer._SWATCH_EXPANDO);
+  if (color != null && color != "No Color") {
+    return AdfDhtmlChooseColorBasePeer._convertToColorObj(color);
+  } else {
+    return null;
+  }
+};
+AdfDhtmlChooseColorBasePeer.prototype.GetComponentLastUsedColor = function(component, domElement) {
+  var buttonSwatchId = AdfRichUIPeer.CreateSubId(component.getClientId(), AdfDhtmlChooseColorBasePeer._LAST_USED_COLOR_BTN);
+  var element = AdfAgent.AGENT.getElementById(buttonSwatchId);
+  if (element) {
+    var colorString = element.getAttribute(AdfDhtmlChooseColorBasePeer._COLOR_VALUE_EXPANDO);
+    return AdfDhtmlChooseColorBasePeer._convertToColorObj(colorString);
+  }
+};
+AdfDhtmlChooseColorBasePeer.prototype.GetComponentDefaultColor = function(component, domElement) {
+  var buttonSwatchId = AdfRichUIPeer.CreateSubId(component.getClientId(), AdfDhtmlChooseColorBasePeer._DEFAULT_COLOR_BTN);
+  var element = AdfAgent.AGENT.getElementById(buttonSwatchId);
+  var colorString = element.getAttribute(AdfDhtmlChooseColorBasePeer._COLOR_VALUE_EXPANDO);
+  return AdfDhtmlChooseColorBasePeer._convertToColorObj(colorString);
+};
+AdfDhtmlChooseColorBasePeer.prototype.GetComponentWidth = function(component, domElement) {
+  return this._getSwatchRows(component).length;
+};
+AdfDhtmlChooseColorBasePeer.prototype._getSwatchRows = function(component) {
+  var swatchTableId = AdfRichUIPeer.CreateSubId(component.getClientId(), AdfDhtmlChooseColorBasePeer._STANDARD_SWATCH_TABLE_ID);
+  var agent = AdfAgent.AGENT;
+  var tableElement = agent.getElementById(swatchTableId);
+  return agent.getTableRows(tableElement);
+};
+AdfDhtmlChooseColorBasePeer.prototype.GetComponentColorData = function(component, domElement) {
+  var rows = this._getSwatchRows(component);
+  var rowsLength = rows.length;
+  var colorArray = new Array;
+  var rowColorArray = null;
+  for (var i = 0;i < rowsLength;i++) {
+    rowColorArray = this._getColorArrayFromSwatchRow(component, rows[i]);
+    colorArray = colorArray.concat(rowColorArray);
+  }
+  return colorArray;
+};
+AdfDhtmlChooseColorBasePeer.prototype.GetComponentCustomColorData = function(component, domElement) {
+  var customRowId = this._getCustomColorRowId(component);
+  var rowElement = AdfAgent.AGENT.getElementById(customRowId);
+  if (rowElement) {
+    return this._getColorArrayFromSwatchRow(component, rowElement);
+  }
+};
+AdfDhtmlChooseColorBasePeer.prototype._insertNewCustomColor = function(component, domElement, newColor) {
+  var customColors = this.GetComponentCustomColorData(component, domElement);
+  if (!customColors) {
+    return;
+  }
+  var colorCount = customColors.length;
+  var newCustomColorData = null;
+  if (customColors[colorCount - 1] != null) {
+    newCustomColorData = customColors.slice();
+    newCustomColorData.splice(0, 1);
+    newCustomColorData[colorCount - 1] = newColor;
+  } else {
+    newCustomColorData = customColors.slice();
+    for (i = 0;i < colorCount;i++) {
+      if (newCustomColorData[i] == null) {
+        newCustomColorData[i] = newColor;
+        break;
+      }
+    }
+  }
+  AdfDhtmlInputChooseBindingUtils.updateInputComponentProperty(component, AdfRichChooseColor.CUSTOM_COLOR_DATA, AdfRichInputColor.CUSTOM_COLOR_DATA, newCustomColorData);
+  component.setProperty(AdfRichChooseColor.CUSTOM_COLOR_DATA, newCustomColorData);
+};
+AdfDhtmlChooseColorBasePeer.prototype._getCustomColorRowId = function(component) {
+  return AdfRichUIPeer.CreateSubId(component.getClientId(), AdfDhtmlChooseColorBasePeer._CUSTOM_ROW_ID);
+};
+AdfDhtmlChooseColorBasePeer.prototype.ComponentCustomColorDataChanged = function(component, domElement, newValue, oldValue) {
+  var customColorRowId = this._getCustomColorRowId(component);
+  var customRowElement = AdfAgent.AGENT.getElementById(customColorRowId);
+  this._setupSwatchRow(component, customRowElement, newValue);
+  AdfDhtmlInputChooseBindingUtils.updateInputComponentProperty(component, AdfRichChooseColor.CUSTOM_COLOR_DATA, AdfRichInputColor.CUSTOM_COLOR_DATA, newValue);
+};
+AdfDhtmlChooseColorBasePeer.prototype.ComponentColorValueChanged = function(component, domElement, newValue, oldValue) {
+  var clientId = component.getClientId();
+  var oldSelectedSwatch = null;
+  var newSelectedSwatch = null;
+  var swatchSelectionKnown = this._getSelectionState(clientId);
+  switch(swatchSelectionKnown) {
+    case AdfDhtmlChooseColorBasePeer._SELECTION_OLD_SWATCH_KNOWN:
+      oldSelectedSwatch = this._getPrevSelection(clientId);
+      newSelectedSwatch = this._findSwatchByColor(component, newValue, false);
+      break;
+    case AdfDhtmlChooseColorBasePeer._SELECTION_NEW_SWATCH_KNOWN:
+      oldSelectedSwatch = this._findSwatchByColor(component, oldValue, false);
+      newSelectedSwatch = this._getCurrentSelection(clientId);
+      break;
+    case AdfDhtmlChooseColorBasePeer._SELECTION_UNKNOWN:
+    ;
+    case AdfDhtmlChooseColorBasePeer._SELECTION_PROCESSED:
+      oldSelectedSwatch = this._findSwatchByColor(component, oldValue, true);
+      newSelectedSwatch = this._findSwatchByColor(component, newValue, false);
+      break;
+    case AdfDhtmlChooseColorBasePeer._SELECTION_SWATCHES_KNOWN:
+      oldSelectedSwatch = this._getPrevSelection(clientId);
+      newSelectedSwatch = this._getCurrentSelection(clientId);
+    default:
+      break;
+  }
+  if (newSelectedSwatch == null) {
+    if (newValue != null) {
+      this._insertNewCustomColor(component, domElement, newValue);
+      newSelectedSwatch = this._findSwatchByColor(component, newValue, false);
+    }
+  }
+  this._selectDOMColorSwatch(newSelectedSwatch, oldSelectedSwatch);
+  AdfDhtmlInputChooseBindingUtils.updateInputComponentProperty(component, AdfDhtmlChooseColorBasePeer.__COLOR_VALUE, AdfUIValue.VALUE);
+};
+AdfDhtmlChooseColorBasePeer.prototype.ComponentLastUsedColorChanged = function(component, domElement, newValue, oldValue) {
+  var buttonSwatchId = AdfRichUIPeer.CreateSubId(component.getClientId(), AdfDhtmlChooseColorBasePeer._LAST_USED_COLOR_BTN);
+  if (buttonSwatchId) {
+    this._updateButtonSwatch(buttonSwatchId, newValue);
+    AdfDhtmlInputChooseBindingUtils.updateInputComponentProperty(component, AdfDhtmlChooseColorBasePeer.__LAST_USED_COLOR, AdfDhtmlInputColorPeer.__LAST_USED_COLOR);
+  }
+};
+AdfDhtmlChooseColorBasePeer.prototype.ComponentDefaultColorChanged = function(component, domElement, newValue, oldValue) {
+  var buttonSwatchId = AdfRichUIPeer.CreateSubId(component.getClientId(), AdfDhtmlChooseColorBasePeer._DEFAULT_COLOR_BTN);
+  this._updateButtonSwatch(buttonSwatchId, newValue);
+};
+AdfDhtmlChooseColorBasePeer.prototype.HandleComponentClick = function(componentEvent) {
+  var component = componentEvent.getSource();
+  var eventTarget = componentEvent.getNativeEventTarget();
+  if (this._isCustomDialogOpen()) {
+    componentEvent.cancel();
+    return;
+  } else {
+    if (this._isSwatch(eventTarget)) {
+      var clientId = component.getClientId();
+      var oldSelectedSwatch = this._getCurrentSelection(clientId);
+      this._updatePrevSelection(clientId, oldSelectedSwatch);
+      this._updateCurrentSelection(clientId, eventTarget);
+      var selectionState = this._getSelectionState(clientId);
+      this._updateSelectionState(clientId, selectionState != AdfDhtmlChooseColorBasePeer._SELECTION_UNKNOWN ? AdfDhtmlChooseColorBasePeer._SELECTION_SWATCHES_KNOWN : AdfDhtmlChooseColorBasePeer._SELECTION_NEW_SWATCH_KNOWN);
+      var newValue = this._getColorFromSwatch(eventTarget, component);
+      component.setProperty(AdfDhtmlChooseColorBasePeer.__COLOR_VALUE, newValue, false, true);
+      component.setProperty(AdfDhtmlChooseColorBasePeer.__LAST_USED_COLOR, newValue, false, AdfUIComponent.PROPAGATE_LOCALLY);
+      componentEvent.cancel();
+      AdfDhtmlInputChooseBindingUtils.returnToInputComponent(component, true);
+    } else {
+      if (eventTarget.getAttribute(AdfDhtmlChooseColorBasePeer._BUTTON_EXPANDO) != null) {
+        var buttonExpando = eventTarget.getAttribute(AdfDhtmlChooseColorBasePeer._BUTTON_EXPANDO);
+        if (buttonExpando == AdfDhtmlChooseColorBasePeer._LAST_USED_COLOR_BTN) {
+          var newValue = component.getProperty(AdfDhtmlChooseColorBasePeer.__LAST_USED_COLOR);
+          component.setProperty(AdfDhtmlChooseColorBasePeer.__COLOR_VALUE, newValue, false, true);
+          AdfDhtmlInputChooseBindingUtils.updateInputComponentProperty(component, AdfDhtmlChooseColorBasePeer.__COLOR_VALUE, AdfUIValue.VALUE);
+          AdfDhtmlInputChooseBindingUtils.returnToInputComponent(component);
+        } else {
+          if (buttonExpando == AdfDhtmlChooseColorBasePeer._DEFAULT_COLOR_BTN) {
+            var newValue = component.getProperty(AdfRichChooseColor.DEFAULT_COLOR);
+            component.setProperty(AdfDhtmlChooseColorBasePeer.__COLOR_VALUE, newValue, false, true);
+            AdfDhtmlInputChooseBindingUtils.returnToInputComponent(component);
+          } else {
+            if (buttonExpando == AdfDhtmlChooseColorBasePeer._CUSTOM_COLOR_BTN) {
+              var customPanelClientId = AdfRichUIPeer.CreateSubId(component.getClientId(), AdfDhtmlChooseColorBasePeer._CUSTOM_PANEL);
+              var colorParam = component.getProperty(AdfDhtmlChooseColorBasePeer.__COLOR_VALUE);
+              if (this._customPanelHandler == null) {
+                var customHandler = new AdfDhtmlChooseColorBasePeer._CustomPanelHandler(colorParam, customPanelClientId, this);
+                this._customPanelHandler = customHandler;
+              }
+              this._showCustomDialog(component);
+            }
+          }
+        }
+        componentEvent.cancel();
+      }
+    }
+  }
+};
+AdfDhtmlChooseColorBasePeer.prototype._isSwatch = function(element) {
+  return element && element.attributes && element.getAttribute(AdfDhtmlChooseColorBasePeer._SWATCH_EXPANDO) != null;
+};
+AdfDhtmlChooseColorBasePeer.prototype._handleArrowKeys = function(element, key) {
+  var targetElement;
+  var pos;
+  switch(key) {
+    case AdfKeyStroke.ARROWUP_KEY:
+    ;
+    case AdfKeyStroke.ARROWDOWN_KEY:
+      if (key == AdfKeyStroke.ARROWUP_KEY) {
+        targetElement = AdfDomUtils.getPreviousElement(element.parentNode);
+      } else {
+        targetElement = AdfDomUtils.getNextElement(element.parentNode);
+      }
+      if (targetElement) {
+        pos = AdfDomUtils.getElementPosition(element);
+        targetElement = AdfDomUtils.getChildElementByPosition(targetElement, element.nodeType, pos);
+      }
+      break;
+    case AdfKeyStroke.ARROWRIGHT_KEY:
+      targetElement = AdfDomUtils.getNextElement(element);
+      if (!targetElement && element.parentNode != null) {
+        var nexRow = AdfDomUtils.getNextElement(element.parentNode);
+        if (nexRow) {
+          targetElement = AdfDomUtils.getFirstChildElement(nexRow);
+        }
+      }
+      if (targetElement && AdfDomUtils.containsCSSClassName(targetElement, "p_AFDisabled")) {
+        targetElement = null;
+      }
+      break;
+    case AdfKeyStroke.ARROWLEFT_KEY:
+      targetElement = AdfDomUtils.getPreviousElement(element);
+      if (!targetElement && element.parentNode != null) {
+        var prevRow = AdfDomUtils.getPreviousElement(element.parentNode);
+        if (prevRow) {
+          targetElement = AdfDomUtils.getLastChildElement(prevRow);
+        }
+      }
+      break;
+    default:
+      break;
+  }
+  if (targetElement) {
+    if (element) {
+      element.setAttribute("tabIndex", "-1");
+    }
+    targetElement.setAttribute("tabIndex", "0");
+    AdfFocusUtils.focusElement(targetElement);
+  }
+};
+AdfDhtmlChooseColorBasePeer.prototype.HandleComponentKeyDown = function(componentEvent) {
+  var component = this.getComponent();
+  var agent = AdfAgent.AGENT;
+  var evt = componentEvent.getNativeEvent();
+  var keyCode = agent.getKeyCode(evt);
+  if (evt.ctrlKey) {
+    return;
+  }
+  var targetElement = null;
+  switch(keyCode) {
+    case AdfKeyStroke.ARROWUP_KEY:
+    ;
+    case AdfKeyStroke.ARROWDOWN_KEY:
+    ;
+    case AdfKeyStroke.ARROWRIGHT_KEY:
+    ;
+    case AdfKeyStroke.ARROWLEFT_KEY:
+      var eventTarget = componentEvent.getNativeEventTarget();
+      if (this._isCustomDialogOpen()) {
+        this._customPanelHandler._handleArrowKeys(eventTarget, keyCode);
+      } else {
+        if (this._isSwatch(eventTarget.firstChild)) {
+          this._handleArrowKeys(eventTarget, keyCode);
+        }
+      }
+      componentEvent.cancel();
+      return false;
+  }
+};
+AdfDhtmlChooseColorBasePeer.prototype.HandleComponentKeyUp = function(componentEvent) {
+  var component = this.getComponent();
+  var agent = AdfAgent.AGENT;
+  var evt = componentEvent.getNativeEvent();
+  var keyCode = agent.getKeyCode(evt);
+  if (evt.ctrlKey) {
+    return;
+  }
+  var targetElement = null;
+  switch(keyCode) {
+    case AdfKeyStroke.ENTER_KEY:
+    ;
+    case AdfKeyStroke.SPACE_KEY:
+      var eventTarget = componentEvent.getNativeEventTarget();
+      var element = eventTarget.firstChild;
+      if (this._isSwatch(element)) {
+        AdfDomUtils.addCSSClassName(element, "p_AFSelected");
+        var newValue = this._getColorFromSwatch(element);
+        component.setProperty(AdfDhtmlChooseColorBasePeer.__COLOR_VALUE, newValue, false, true);
+        AdfDhtmlInputChooseBindingUtils.returnToInputComponent(component, true);
+        componentEvent.cancel();
+      }
+      break;
+    case AdfKeyStroke.ESC_KEY:
+      AdfDhtmlInputChooseBindingUtils.returnToInputComponent(component, true);
+      componentEvent.cancel();
+      break;
+  }
+};
+AdfDhtmlChooseColorBasePeer.prototype.PopupClosed = function(component, contentDom, popupId) {
+  AdfDhtmlChooseColorBasePeer.superclass.PopupClosed.call(this, component, contentDom);
+  if (popupId == AdfDhtmlChooseColorBasePeer._CUSTOM_PANEL) {
+    var customPanelId = AdfRichUIPeer.CreateSubId(component.getClientId(), AdfDhtmlChooseColorBasePeer._CUSTOM_PANEL);
+    var contentDom = AdfAgent.AGENT.getElementById(customPanelId);
+    var parentId = AdfRichUIPeer.CreateSubId(component.getClientId(), AdfDhtmlChooseColorBasePeer._CUSTOM_PANEL_WRAPPER_ID);
+    var parentDom = AdfAgent.AGENT.getElementById(parentId);
+    parentDom.appendChild(contentDom);
+    this._customPanelHandler = null;
+  }
+};
+AdfDhtmlChooseColorBasePeer.prototype.HandleComponentDialog = function(componentEvent) {
+  var component = this.getComponent();
+  if (componentEvent.getOutcome() == AdfDialogEvent.OUTCOME_OK) {
+    var newColor = this._customPanelHandler.getCurrentColorObj();
+    var clientId = component.getClientId();
+    var oldSelectedSwatch = this._getCurrentSelection(clientId);
+    this._updatePrevSelection(clientId, oldSelectedSwatch);
+    this._updateSelectionState(clientId, AdfDhtmlChooseColorBasePeer._SELECTION_OLD_SWATCH_KNOWN);
+    component.setProperty(AdfDhtmlChooseColorBasePeer.__COLOR_VALUE, newColor, false, true);
+    component.setProperty(AdfDhtmlChooseColorBasePeer.__LAST_USED_COLOR, newColor, false, AdfUIComponent.PROPAGATE_LOCALLY);
+  }
+  componentEvent.cancel();
+  this.hidePopup(this.getComponent(), AdfDhtmlChooseColorBasePeer._CUSTOM_PANEL);
+  AdfDhtmlInputChooseBindingUtils.returnToInputComponent(component);
+};
+AdfDhtmlChooseColorBasePeer.prototype._isCustomDialogOpen = function() {
+  return this._customPanelHandler != null;
+};
+AdfDhtmlChooseColorBasePeer.prototype._findSwatchFromColorPalette = function(component, colorToMatch, selected) {
+  var rows = this._getSwatchRows(component);
+  var rowsLength = rows.length;
+  for (var i = 0;i < rowsLength;i++) {
+    var element = AdfDomUtils.getFirstChildElement(rows[i]);
+    while (element) {
+      if (!selected || AdfDomUtils.containsCSSClassName(element, "p_AFSelected")) {
+        var swatch = AdfDomUtils.getFirstChildElement(element);
+        var color = swatch.getAttribute(AdfDhtmlChooseColorBasePeer._SWATCH_EXPANDO);
+        if (color == "No Color") {
+          color = null;
+        }
+        if (color == colorToMatch) {
+          return swatch;
+        }
+      }
+      element = AdfDomUtils.getNextElement(element);
+    }
+  }
+  return null;
+};
+AdfDhtmlChooseColorBasePeer.prototype._findSwatchFromCustomRow = function(component, colorToMatch) {
+  var customRowId = this._getCustomColorRowId(component);
+  var rowElement = AdfAgent.AGENT.getElementById(customRowId);
+  if (rowElement) {
+    var element = AdfDomUtils.getFirstChildElement(rowElement);
+    while (element) {
+      if (!AdfDomUtils.containsCSSClassName(element, "p_AFDisabled")) {
+        var swatch = AdfDomUtils.getFirstChildElement(element);
+        var color = swatch.getAttribute(AdfDhtmlChooseColorBasePeer._SWATCH_EXPANDO);
+        if (color == colorToMatch) {
+          return swatch;
+        }
+      }
+      element = AdfDomUtils.getNextElement(element);
+    }
+  }
+  return null;
+};
+AdfDhtmlChooseColorBasePeer.prototype._findSwatchByColor = function(component, colorToMatch, selected) {
+  var colorToMatchStr = AdfDhtmlChooseColorBasePeer._convertToColorString(colorToMatch);
+  var swatch = null;
+  swatch = this._findSwatchFromColorPalette(component, colorToMatchStr, selected);
+  if (!swatch) {
+    swatch = this._findSwatchFromCustomRow(component, colorToMatchStr);
+  }
+  return swatch;
+};
+AdfDhtmlChooseColorBasePeer.prototype._setupSwatchRow = function(component, rowElement, colorArray) {
+  var rowChildrenArray = rowElement.childNodes;
+  var length = rowChildrenArray.length;
+  var childElement = null;
+  var swatch = null;
+  var agent = AdfAgent.AGENT;
+  var color = null;
+  var colorIndex = 0;
+  agent.elementsRemoved(rowElement);
+  if (colorArray == null) {
+    colorArray = new Array;
+  }
+  for (var i = 0;i < length;i++) {
+    childElement = rowChildrenArray[i];
+    if (agent.getNodeName(childElement) != "TD") {
+      continue;
+    }
+    swatch = childElement.firstChild;
+    color = colorArray[colorIndex];
+    colorIndex++;
+    AdfDomUtils.removeCSSClassName(swatch, "p_AFTransparent");
+    if (color != null) {
+      var colorString = AdfDhtmlChooseColorBasePeer._convertToColorString(color);
+      swatch.setAttribute(AdfDhtmlChooseColorBasePeer._SWATCH_EXPANDO, colorString);
+      swatch.style.backgroundColor = colorString;
+      if (colorString != null) {
+        colorString = colorString.substring(1);
+      }
+      colorString += " / " + color.red + "," + color.green + "," + color.blue;
+      swatch.setAttribute("alt", colorString);
+      swatch.setAttribute("title", colorString);
+      AdfDomUtils.removeCSSClassName(childElement, "p_AFDisabled");
+    } else {
+      AdfDomUtils.addCSSClassName(swatch, "p_AFTransparent");
+    }
+  }
+  agent.elementsAdded(rowElement);
+};
+AdfDhtmlChooseColorBasePeer.prototype._selectDOMColorSwatch = function(newSelectNode, oldSelectNode) {
+  if (oldSelectNode != newSelectNode) {
+    var component = this.getComponent();
+    var clientId = component.getClientId();
+    if (oldSelectNode != null && oldSelectNode.parentNode != null) {
+      AdfDomUtils.removeCSSClassName(oldSelectNode.parentNode, "p_AFSelected");
+    }
+    this._updatePrevSelection(clientId, oldSelectNode);
+    if (newSelectNode != null) {
+      var newSelectSwatchCell = newSelectNode.parentNode;
+      AdfDomUtils.addCSSClassName(newSelectSwatchCell, "p_AFSelected");
+    }
+    this._updateCurrentSelection(clientId, newSelectNode);
+    this._updateSelectionState(clientId, AdfDhtmlChooseColorBasePeer._SELECTION_PROCESSED);
+  }
+};
+AdfDhtmlChooseColorBasePeer.prototype._updateButtonSwatch = function(buttonSwatchId, newColor) {
+  var swatchElement = AdfAgent.AGENT.getElementById(buttonSwatchId);
+  if (swatchElement) {
+    var imgURL = null;
+    AdfDomUtils.removeCSSClassName(swatchElement, "p_AFTransparent");
+    if (newColor != null) {
+      var colorString = AdfDhtmlChooseColorBasePeer._convertToColorString(newColor);
+      swatchElement.style.backgroundColor = colorString;
+      swatchElement.setAttribute(AdfDhtmlChooseColorBasePeer._COLOR_VALUE_EXPANDO, colorString);
+    } else {
+      AdfDomUtils.addCSSClassName(swatchElement, "p_AFTransparent");
+      swatchElement.removeAttribute(AdfDhtmlChooseColorBasePeer._COLOR_VALUE_EXPANDO);
+    }
+  }
+};
+AdfDhtmlChooseColorBasePeer.prototype._getColorArrayFromSwatchRow = function(component, rowElement) {
+  var colorArray = new Array;
+  var rowChildrenArray = rowElement.childNodes;
+  var length = rowChildrenArray.length;
+  var childElement = null;
+  var agent = AdfAgent.AGENT;
+  var swatch = null;
+  var colorIndex = 0;
+  for (var i = 0;i < length;i++) {
+    childElement = rowChildrenArray[i];
+    if (agent.getNodeName(childElement) != "TD") {
+      continue;
+    }
+    swatch = childElement.firstChild;
+    if (this._isSwatch(swatch)) {
+      colorArray[colorIndex] = this._getColorFromSwatch(swatch);
+      colorIndex++;
+    } else {
+      colorArray[colorIndex] = null;
+      colorIndex++;
+    }
+  }
+  return colorArray;
+};
+AdfDhtmlChooseColorBasePeer.prototype._updatePrevSelection = function(clientId, swatchElement) {
+  AdfDhtmlChooseColorBasePeer._prevSwatchSelectionMap[clientId] = swatchElement;
+};
+AdfDhtmlChooseColorBasePeer.prototype._updateCurrentSelection = function(clientId, swatchElement) {
+  AdfDhtmlChooseColorBasePeer._curSwatchSelectionMap[clientId] = swatchElement;
+};
+AdfDhtmlChooseColorBasePeer.prototype._updateSelectionState = function(clientId, state) {
+  AdfDhtmlChooseColorBasePeer._selectionStateMap[clientId] = state;
+};
+AdfDhtmlChooseColorBasePeer.prototype._getPrevSelection = function(clientId) {
+  return AdfDhtmlChooseColorBasePeer._prevSwatchSelectionMap[clientId];
+};
+AdfDhtmlChooseColorBasePeer.prototype._getCurrentSelection = function(clientId) {
+  return AdfDhtmlChooseColorBasePeer._curSwatchSelectionMap[clientId];
+};
+AdfDhtmlChooseColorBasePeer.prototype._getSelectionState = function(clientId) {
+  var state = AdfDhtmlChooseColorBasePeer._selectionStateMap[clientId];
+  if (!state) {
+    AdfDhtmlChooseColorBasePeer._selectionStateMap[clientId] = state = AdfDhtmlChooseColorBasePeer._SELECTION_UNKNOWN;
+  }
+  return state;
+};
+AdfDhtmlChooseColorBasePeer.prototype._showCustomDialog = function(component) {
+  var customPanelId = AdfRichUIPeer.CreateSubId(component.getClientId(), AdfDhtmlChooseColorBasePeer._CUSTOM_PANEL);
+  var contentDom = AdfAgent.AGENT.getElementById(customPanelId);
+  var dragElementId = AdfRichUIPeer.CreateSubId(customPanelId, AdfDhtmlChooseColorBasePeer._CUSTOM_DLG_DRAG_ID);
+  var dragElement = AdfAgent.AGENT.getElementById(dragElementId);
+  contentDom.parentNode.removeChild(contentDom);
+  this.showPopup(component, contentDom, null, AdfDhtmlChooseColorBasePeer._CUSTOM_PANEL);
+  this._customPanelHandler.updateDisplay();
+  this._customPanelHandler.updateOldColorSwatch();
+};
+AdfDhtmlChooseColorBasePeer._initSwatchSelectionHandlerClass = function() {
+  AdfDhtmlChooseColorBasePeer._SwatchSelectionHandler = function() {
+    this.Init();
+  };
+  AdfObject.createSubclass(AdfDhtmlChooseColorBasePeer._SwatchSelectionHandler, AdfObject, "AdfDhtmlChooseColorBasePeer._SwatchSelectionHandler");
+  AdfDhtmlChooseColorBasePeer._SwatchSelectionHandler.prototype.Init = function() {
+    AdfDhtmlChooseColorBasePeer._SwatchSelectionHandler.superclass.Init.call(this);
+    this._prevSwatchSelectionMap = new Object;
+    this._curSwatchSelectionMap = new Object;
+    this._selectionStateMap = new Object;
+  };
+  AdfDhtmlChooseColorBasePeer._SwatchSelectionHandler.prototype.updatePrevSelection = function(clientId, swatchElement) {
+    this._prevSwatchSelectionMap[clientId] = swatchElement;
+  };
+  AdfDhtmlChooseColorBasePeer._SwatchSelectionHandler.prototype.updateCurrentSelection = function(clientId, swatchElement) {
+    this._curSwatchSelectionMap[clientId] = swatchElement;
+  };
+  AdfDhtmlChooseColorBasePeer._SwatchSelectionHandler.prototype.updateSelectionState = function(clientId, state) {
+    this._selectionStateMap[clientId] = state;
+  };
+  AdfDhtmlChooseColorBasePeer._SwatchSelectionHandler.prototype.getPrevSelection = function(clientId) {
+    return this._prevSwatchSelectionMap[clientId];
+  };
+  AdfDhtmlChooseColorBasePeer._SwatchSelectionHandler.prototype.getCurrentSelection = function(clientId) {
+    return this._curSwatchSelectionMap[clientId];
+  };
+  AdfDhtmlChooseColorBasePeer._SwatchSelectionHandler.prototype.getSelectionState = function(clientId) {
+    var state = this._selectionStateMap[clientId];
+    if (!state) {
+      this._selectionStateMap[clientId] = state = AdfDhtmlChooseColorBasePeer._SELECTION_UNKNOWN;
+    }
+    return state;
+  };
+};
+AdfDhtmlChooseColorBasePeer._initCustomPanelHandlerClass = function() {
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler = function(rgbOriginalColor, clientId, callPeer) {
+    this.Init(rgbOriginalColor, clientId, callPeer);
+  };
+  AdfObject.createSubclass(AdfDhtmlChooseColorBasePeer._CustomPanelHandler, AdfObject, "AdfDhtmlChooseColorBasePeer._CustomPanelHandler");
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler.prototype.Init = function(rgbOriginalColor, clientId) {
+    AdfDhtmlChooseColorBasePeer._CustomPanelHandler.superclass.Init.call(this);
+    this._clientId = clientId;
+    var colorString = AdfDhtmlChooseColorBasePeer._convertToColorString(rgbOriginalColor);
+    if (colorString != null && rgbOriginalColor.alpha != 0) {
+      colorString = colorString.substring(1);
+    } else {
+      colorString = "3F7B7B";
+    }
+    var thisClass = AdfDhtmlChooseColorBasePeer._CustomPanelHandler;
+    this._hueSaturationMapId = AdfRichUIPeer.CreateSubId(clientId, thisClass._HUE_SATUR_MAP_ID);
+    this._crossHairImgId = AdfRichUIPeer.CreateSubId(clientId, thisClass._CROSSHAIR_ID);
+    this._luminosityMapId = AdfRichUIPeer.CreateSubId(clientId, thisClass._LUM_MAP_ID);
+    this._luminosityImgId = AdfRichUIPeer.CreateSubId(clientId, thisClass._LUM_IMG_ID);
+    this._sliderThumbId = AdfRichUIPeer.CreateSubId(clientId, thisClass._THUMB_ID);
+    this._currentColorSwatchId = AdfRichUIPeer.CreateSubId(clientId, thisClass._CUR_SWATCH_ID);
+    this._oldColorSwatchId = AdfRichUIPeer.CreateSubId(clientId, thisClass._PREV_SWATCH_ID);
+    this._hexFieldId = AdfRichUIPeer.CreateSubId(clientId, thisClass._H_EDIT_ID);
+    this._rFieldId = AdfRichUIPeer.CreateSubId(clientId, thisClass._R_EDIT_ID);
+    this._gFieldId = AdfRichUIPeer.CreateSubId(clientId, thisClass._G_EDIT_ID);
+    this._bFieldId = AdfRichUIPeer.CreateSubId(clientId, thisClass._B_EDIT_ID);
+    var advencedColorClass = AdfDhtmlChooseColorBasePeer._CustomPanelHandler._AdvancedColor;
+    this._sliderBackgroundColor = advencedColorClass.createInstanceFromRgbTotal(16777215);
+    var parsedRgbTotal = AdfDhtmlChooseColorBasePeer.parseHexColor(colorString);
+    var advancedColorClass = AdfDhtmlChooseColorBasePeer._CustomPanelHandler._AdvancedColor;
+    this._currentColor = this._oldColor = advancedColorClass.createInstanceFromRgbTotal(parsedRgbTotal);
+    this._initElementDimensions();
+    this._bindToCustomEditDOM();
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler.prototype._initElementDimensions = function() {
+    var agent = AdfAgent.AGENT;
+    var crossHair = agent.getElementById(this._crossHairImgId);
+    this._CROSSHAIR_IMG_WIDTH = this._getStyleCSSLength(agent, crossHair, "width");
+    this._CROSSHAIR_IMG_HEIGHT = this._getStyleCSSLength(agent, crossHair, "height");
+    var thumb = agent.getElementById(this._sliderThumbId);
+    this._SLIDERTHUMB_IMG_HEIGHT = this._getStyleCSSLength(agent, thumb, "height");
+    var slider = agent.getElementById(this._luminosityMapId);
+    this._SLIDERDIV_ELEMENT_HEIGHT = this._getStyleCSSLength(agent, slider, "height");
+    var hueSaturationMap = agent.getElementById(this._hueSaturationMapId);
+    this._HUESATURATIONMAP_WIDTH = this._getStyleCSSLength(agent, hueSaturationMap, "width");
+    this._HUESATURATIONMAP_HEIGHT = this._getStyleCSSLength(agent, hueSaturationMap, "height");
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler.InitClass = function() {
+    this._CROSSHAIR_WIDTH = "_afrCrossHairWidth";
+    this._CROSSHAIR_HEIGHT = "_afrCrossHairHeight";
+    this._SLIDERTHUMB_HEIGHT = "_afrThumbHeight";
+    this._SLIDER_HEIGHT = "_afrSliderHeight";
+    this._COLOR_IMG_WIDTH = "_afrColorImgWidth";
+    this._COLOR_IMG__HEIGHT = "_afrColorImgHeight";
+    this._HUE_SATUR_MAP_ID = "hueSatMap";
+    this._HUE_SATUR_IMG_ID = "hueSatImg";
+    this._CROSSHAIR_ID = "crossHair";
+    this._LUM_MAP_ID = "lumMap";
+    this._LUM_IMG_ID = "lumImg";
+    this._THUMB_ID = "thumb";
+    this._H_EDIT_ID = "hEdit";
+    this._R_EDIT_ID = "rEdit";
+    this._G_EDIT_ID = "gEdit";
+    this._B_EDIT_ID = "bEdit";
+    this._PREV_SWATCH_ID = "cstPrevSwtch";
+    this._CUR_SWATCH_ID = "cstCurSwtch";
+    var laf = AdfPage.PAGE.getLookAndFeel();
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler.prototype._getStyleCSSLength = function(agent, element, styleName) {
+    var length = 0;
+    var style = agent.getComputedStyle(element);
+    var widthString = agent.getStyleProperty(style, styleName);
+    if (widthString != null) {
+      length = AdfAgent.getCSSLengthAsInt(widthString);
+    }
+    return length;
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler.prototype._bindToCustomEditDOM = function() {
+    var clientId = this._clientId;
+    customHandlerClass = AdfDhtmlChooseColorBasePeer._CustomPanelHandler;
+    var agent = AdfAgent.AGENT;
+    var hexFieldId = AdfRichUIPeer.CreateSubId(clientId, customHandlerClass._H_EDIT_ID);
+    var domNode = agent.getElementById(hexFieldId);
+    var domChangeLister = this.createCallback(this._handleDomChange);
+    agent.addBubbleEventListener(domNode, "change", domChangeLister);
+    var rFieldId = AdfRichUIPeer.CreateSubId(clientId, customHandlerClass._R_EDIT_ID);
+    domNode = agent.getElementById(rFieldId);
+    domChangeLister = this.createCallback(this._handleDomChange);
+    agent.addBubbleEventListener(domNode, "change", domChangeLister);
+    var gFieldId = AdfRichUIPeer.CreateSubId(clientId, customHandlerClass._G_EDIT_ID);
+    domNode = AdfAgent.AGENT.getElementById(gFieldId);
+    domChangeLister = this.createCallback(this._handleDomChange);
+    agent.addBubbleEventListener(domNode, "change", domChangeLister);
+    var bFieldId = AdfRichUIPeer.CreateSubId(clientId, customHandlerClass._B_EDIT_ID);
+    domNode = AdfAgent.AGENT.getElementById(bFieldId);
+    domChangeLister = this.createCallback(this._handleDomChange);
+    agent.addBubbleEventListener(domNode, "change", domChangeLister);
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler.prototype.getCurrentColorObj = function() {
+    var colorString = "#" + this._currentColor.getRgbHex();
+    return AdfDhtmlChooseColorBasePeer._convertToColorObj(colorString);
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler.prototype._handleDomChange = function(domEvent) {
+    var eventTarget = AdfAgent.AGENT.getEventTarget(domEvent);
+    targetElementId = eventTarget.getAttribute("id");
+    if (targetElementId == this._hexFieldId) {
+      this._onHexFieldChange(domEvent);
+    } else {
+      if (targetElementId == this._rFieldId) {
+        this._onRFieldChange(domEvent);
+      } else {
+        if (targetElementId == this._gFieldId) {
+          this._onGFieldChange(domEvent);
+        } else {
+          if (targetElementId == this._bFieldId) {
+            this._onBFieldChange(domEvent);
+          }
+        }
+      }
+    }
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler.prototype.updateOldColorSwatch = function() {
+    this._updateSwatch(this._oldColorSwatchId, this._oldColor);
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler.prototype.updateNewColorSwatch = function() {
+    this._updateSwatch(this._currentColorSwatchId, this._currentColor);
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler.prototype._updateSwatch = function(swatchId, advancedColor) {
+    var swatch = AdfAgent.AGENT.getElementById(swatchId);
+    var rgbHex = advancedColor.getRgbHex();
+    var newColor = "#" + rgbHex;
+    swatch.style.backgroundColor = newColor;
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler.prototype.updateDisplay = function(skipElementId) {
+    var currentColor = this._currentColor;
+    var selectedHue0To360 = currentColor.getHue();
+    this.updateNewColorSwatch();
+    if (skipElementId != this._hueSaturationMapId && skipElementId != this._luminosityMapId) {
+      this._updateHueSaturationMap();
+      this._updateLuminosityMapThumb();
+    }
+    if (skipElementId != this._luminosityMapId) {
+      this._updateLuminosityMapBackground();
+    }
+    if (skipElementId != this._hexFieldId) {
+      this._updateHexField();
+    }
+    if (skipElementId != this._rFieldId && skipElementId != this._gFieldId && skipElementId != this._bFieldId) {
+      this._updateRField();
+      this._updateGField();
+      this._updateBField();
+    }
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler.prototype.handleComponentMouseDown = function(componentEvent) {
+    var eventTarget = componentEvent.getNativeEventTarget();
+    var nativeEvent = componentEvent.getNativeEvent();
+    targetElementId = eventTarget.getAttribute("id");
+    if (targetElementId == this._hueSaturationMapId || targetElementId == this._crossHairImgId) {
+      this._onHueImageMouseDown(nativeEvent);
+      componentEvent.cancel();
+    } else {
+      if (targetElementId == this._luminosityMapId || targetElementId == this._luminosityImgId || targetElementId == this._sliderThumbId) {
+        this._onBSliderMouseDown(nativeEvent);
+        componentEvent.cancel();
+      }
+    }
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler.prototype._updateHueSaturationMap = function() {
+    var color = this._currentColor;
+    var crossHairImg = AdfAgent.AGENT.getElementById(this._crossHairImgId);
+    var thisClass = AdfDhtmlChooseColorBasePeer._CustomPanelHandler;
+    var crossHairImgWidth = this._CROSSHAIR_IMG_WIDTH;
+    var crossHairImgHeight = this._CROSSHAIR_IMG_HEIGHT;
+    var mapWidth = this._HUESATURATIONMAP_WIDTH;
+    var mapHeight = this._HUESATURATIONMAP_HEIGHT;
+    crossHairImg.style.top = (1 - color.getSaturation()) * mapHeight - crossHairImgHeight / 2 + "px";
+    if (AdfPage.PAGE.getLocaleContext().isRightToLeft()) {
+      crossHairImg.style.left = mapWidth - color.getHue() * mapWidth / 360 - crossHairImgWidth / 2 + "px";
+    } else {
+      crossHairImg.style.left = color.getHue() * mapWidth / 360 - crossHairImgWidth / 2 + "px";
+    }
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler.prototype._handleArrowKeys = function(eventTarget, keyCode) {
+    switch(keyCode) {
+      case AdfKeyStroke.ARROWUP_KEY:
+      ;
+      case AdfKeyStroke.ARROWDOWN_KEY:
+      ;
+      case AdfKeyStroke.ARROWRIGHT_KEY:
+      ;
+      case AdfKeyStroke.ARROWLEFT_KEY:
+        var targetElementId = eventTarget.getAttribute("id");
+        var targetElement = AdfAgent.AGENT.getElementById(targetElementId);
+        var deltaX = keyCode == AdfKeyStroke.ARROWRIGHT_KEY ? 1 : keyCode == AdfKeyStroke.ARROWLEFT_KEY ? -1 : 0;
+        var deltaY = keyCode == AdfKeyStroke.ARROWDOWN_KEY ? 1 : keyCode == AdfKeyStroke.ARROWUP_KEY ? -1 : 0;
+        if (targetElementId == this._hueSaturationMapId || targetElementId == this._crossHairImgId) {
+          this._moveCrossHairByArrow(deltaX, deltaY);
+          AdfFocusUtils.focusElement(targetElement);
+        } else {
+          if (targetElementId == this._luminosityMapId || targetElementId == this._luminosityImgId || targetElementId == this._sliderThumbId) {
+            if (keyCode == AdfKeyStroke.ARROWUP_KEY || keyCode == AdfKeyStroke.ARROWDOWN_KEY) {
+              this._moveBThumbByArrow(deltaY);
+            }
+            AdfFocusUtils.focusElement(targetElement);
+          }
+        }
+        break;
+      default:
+        break;
+    }
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler.prototype._updateLuminosityMapBackground = function() {
+    var color = this._currentColor;
+    var luminosityImgElement = AdfAgent.AGENT.getElementById(this._luminosityImgId);
+    var h = color.getHue();
+    var s = color.getSaturation();
+    this._sliderBackgroundColor.setHsb(h, s, .5);
+    luminosityImgElement.style.backgroundColor = "#" + this._sliderBackgroundColor.getRgbHex();
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler.prototype._updateLuminosityMapThumb = function() {
+    var color = this._currentColor;
+    var sliderThumbImg = AdfAgent.AGENT.getElementById(this._sliderThumbId);
+    var sliderThumbImgHeight = this._SLIDERTHUMB_IMG_HEIGHT;
+    var luminosityImgHeight = this._SLIDERDIV_ELEMENT_HEIGHT;
+    sliderThumbImg.style.top = (1 - color.getLuminosity()) * luminosityImgHeight - sliderThumbImgHeight / 2 + "px";
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler.prototype._updateHexField = function() {
+    var inputElememt = AdfAgent.AGENT.getElementById(this._hexFieldId);
+    inputElememt.value = this._currentColor.getRgbHex();
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler.prototype._updateRField = function() {
+    var inputElememt = AdfAgent.AGENT.getElementById(this._rFieldId);
+    inputElememt.value = this._currentColor.getRed();
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler.prototype._updateGField = function() {
+    var inputElememt = AdfAgent.AGENT.getElementById(this._gFieldId);
+    inputElememt.value = this._currentColor.getGreen();
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler.prototype._updateBField = function() {
+    var inputElememt = AdfAgent.AGENT.getElementById(this._bFieldId);
+    inputElememt.value = this._currentColor.getBlue();
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler.prototype._onHexFieldChange = function(domEvent) {
+    var inputElememt = AdfAgent.AGENT.getElementById(this._hexFieldId);
+    var parsedValue = AdfDhtmlChooseColorBasePeer.parseHexColor(inputElememt.value);
+    if (parsedValue == null) {
+      AdfAgent.AGENT.eatEvent(domEvent);
+      this._showHexValidationError(inputElememt.value);
+      AdfFocusUtils.focusElement(inputElememt);
+      this._updateHexField();
+    } else {
+      this._currentColor.setRgbByTotal(parsedValue);
+      this.updateDisplay();
+    }
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler.prototype._showRGBValidationError = function(inputString) {
+    var laf = AdfPage.PAGE.getLookAndFeel();
+    var errorMessage = TrFastMessageFormatUtils.format(laf.getTranslatedString("af_chooseColor.MSG_RGB_INVALID"), inputString);
+    alert(errorMessage);
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler.prototype._showHexValidationError = function(inputString) {
+    var laf = AdfPage.PAGE.getLookAndFeel();
+    var errorMessage = TrFastMessageFormatUtils.format(laf.getTranslatedString("af_chooseColor.MSG_HEX_INVALID"), inputString);
+    alert(errorMessage);
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler.prototype._onRFieldChange = function(event) {
+    var fieldElement = AdfAgent.AGENT.getElementById(this._rFieldId);
+    var parsedValue = AdfDhtmlChooseColorBasePeer.parse0To255(fieldElement.value);
+    if (parsedValue == null) {
+      AdfAgent.AGENT.eatEvent(event);
+      this._showRGBValidationError(fieldElement.value);
+      AdfFocusUtils.focusElement(fieldElement);
+      this._updateRField();
+    } else {
+      this._currentColor.setRed(parsedValue);
+      this.updateDisplay(this._rFieldId);
+    }
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler.prototype._onGFieldChange = function(event) {
+    var fieldElement = AdfAgent.AGENT.getElementById(this._gFieldId);
+    var parsedValue = AdfDhtmlChooseColorBasePeer.parse0To255(fieldElement.value);
+    if (parsedValue == null) {
+      AdfAgent.AGENT.eatEvent(event);
+      this._showRGBValidationError(fieldElement.value);
+      AdfFocusUtils.focusElement(fieldElement);
+      this._updateGField();
+    } else {
+      this._currentColor.setGreen(parsedValue);
+      this.updateDisplay(this._gFieldId);
+    }
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler.prototype._onBFieldChange = function(event) {
+    var fieldElement = AdfAgent.AGENT.getElementById(this._bFieldId);
+    var parsedValue = AdfDhtmlChooseColorBasePeer.parse0To255(fieldElement.value);
+    if (parsedValue == null) {
+      AdfAgent.AGENT.eatEvent(event);
+      this._showRGBValidationError(fieldElement.value);
+      AdfFocusUtils.focusElement(fieldElement);
+      this._updateBField();
+    } else {
+      this._currentColor.setBlue(parsedValue);
+      this.updateDisplay(this._bFieldId);
+    }
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler.prototype._onHueImageMouseDown = function(event) {
+    this._moveCrossHairToMousePosition(event);
+    AdfPage.PAGE.startDrag(event, this.createCallback(this._onHueImageDrag));
+    AdfAgent.getAgent().eatEvent(event);
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler.prototype._onBSliderMouseDown = function(event) {
+    this._moveBThumbToMousePosition(event);
+    AdfPage.PAGE.startDrag(event, this.createCallback(this._onBThumbDrag));
+    AdfAgent.getAgent().eatEvent(event);
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler.prototype._moveCrossHairToMousePosition = function(event) {
+    var agent = AdfAgent.getAgent();
+    var mousePosition = agent.getMousePosition(event);
+    var hueMapElement = AdfAgent.AGENT.getElementById(this._hueSaturationMapId);
+    var crossHairImgWidth = this._CROSSHAIR_IMG_WIDTH;
+    var crossHairImgHeight = this._CROSSHAIR_IMG_HEIGHT;
+    var mapElementPosition = agent.getElementPosition(hueMapElement);
+    var relativeX = mousePosition.x - mapElementPosition.x;
+    var relativeY = mousePosition.y - mapElementPosition.y;
+    var hueSaturationMapWidth = this._HUESATURATIONMAP_WIDTH;
+    var hueSaturationMapHeight = this._HUESATURATIONMAP_HEIGHT;
+    relativeX = Math.min(relativeX, hueSaturationMapWidth);
+    relativeX = Math.max(0, relativeX);
+    relativeY = Math.min(relativeY, this._HUESATURATIONMAP_HEIGHT);
+    relativeY = Math.max(0, relativeY);
+    var crossHairImg = AdfAgent.AGENT.getElementById(this._crossHairImgId);
+    var newTop = relativeY - Math.floor(crossHairImgHeight / 2);
+    if (relativeY == 0) {
+      newTop++;
+    }
+    crossHairImg.style.top = newTop + "px";
+    var newLeft = relativeX - Math.floor(crossHairImgWidth / 2);
+    if (relativeX == 0) {
+      newLeft++;
+    }
+    crossHairImg.style.left = newLeft + "px";
+    var hue = Math.round(360 * relativeX / hueSaturationMapWidth);
+    if (hue == 360) {
+      hue = 0;
+    }
+    var saturation0To1 = 1 - relativeY / hueSaturationMapHeight;
+    var luminosity = this._currentColor.getLuminosity();
+    this._currentColor.setHsb(hue, saturation0To1, luminosity);
+    this.updateDisplay(hueMapElement.id);
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler.prototype._moveCrossHairByArrow = function(deltaX, deltaY) {
+    var hueMapElement = AdfAgent.AGENT.getElementById(this._hueSaturationMapId);
+    var crossHairImg = AdfAgent.AGENT.getElementById(this._crossHairImgId);
+    var crossHairImgWidth = this._CROSSHAIR_IMG_WIDTH;
+    var crossHairImgHeight = this._CROSSHAIR_IMG_HEIGHT;
+    var relativeX = crossHairImg.offsetLeft + Math.floor(crossHairImgWidth / 2) + deltaX;
+    var relativeY = crossHairImg.offsetTop + Math.floor(crossHairImgHeight / 2) + deltaY;
+    var hueSaturationMapWidth = this._HUESATURATIONMAP_WIDTH;
+    var hueSaturationMapHeight = this._HUESATURATIONMAP_HEIGHT;
+    relativeX = Math.min(relativeX, hueSaturationMapWidth);
+    relativeX = Math.max(0, relativeX);
+    relativeY = Math.min(relativeY, hueSaturationMapHeight);
+    relativeY = Math.max(0, relativeY);
+    var newTop = Math.min(crossHairImg.offsetTop + deltaY + 1, hueSaturationMapHeight - Math.floor(crossHairImgHeight / 2));
+    newTop = Math.max(-Math.floor(crossHairImgHeight / 2), newTop);
+    crossHairImg.style.top = newTop + "px";
+    var newLeft = Math.min(crossHairImg.offsetLeft + deltaX + 1, hueSaturationMapWidth - Math.floor(crossHairImgWidth / 2));
+    newLeft = Math.max(-Math.floor(crossHairImgWidth / 2), newLeft);
+    crossHairImg.style.left = newLeft + "px";
+    var hue = Math.round(360 * relativeX / hueSaturationMapWidth);
+    if (hue == 360) {
+      hue = 0;
+    }
+    var saturation0To1 = 1 - relativeY / hueSaturationMapHeight;
+    var luminosity = this._currentColor.getLuminosity();
+    this._currentColor.setHsb(hue, saturation0To1, luminosity);
+    this.updateDisplay(hueMapElement.id);
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler.prototype._moveBThumbToMousePosition = function(event) {
+    var agent = AdfAgent.getAgent();
+    var mousePosition = agent.getMousePosition(event);
+    var sliderElement = AdfAgent.AGENT.getElementById(this._luminosityMapId);
+    var sliderElementPosition = agent.getElementPosition(sliderElement);
+    var relativeY = mousePosition.y - sliderElementPosition.y;
+    var sliderDivElementHeight = this._SLIDERDIV_ELEMENT_HEIGHT;
+    relativeY = Math.min(relativeY, sliderDivElementHeight);
+    relativeY = Math.max(0, relativeY);
+    var thumbImg = AdfAgent.AGENT.getElementById(this._sliderThumbId);
+    var sliderThumbImgHeight = this._SLIDERTHUMB_IMG_HEIGHT;
+    var newTop = relativeY - Math.floor(sliderThumbImgHeight / 2);
+    thumbImg.style.top = newTop + "px";
+    var hue = this._currentColor.getHue();
+    var luminosity = 1 - relativeY / sliderDivElementHeight;
+    var saturation = this._currentColor.getSaturation();
+    this._currentColor.setHsb(hue, saturation, luminosity);
+    this.updateDisplay(sliderElement.id);
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler.prototype._moveBThumbByArrow = function(deltaY) {
+    var sliderElement = AdfAgent.AGENT.getElementById(this._luminosityMapId);
+    var thumbImg = AdfAgent.AGENT.getElementById(this._sliderThumbId);
+    var sliderDivElementHeight = this._SLIDERDIV_ELEMENT_HEIGHT;
+    var sliderThumbImgHeight = this._SLIDERTHUMB_IMG_HEIGHT;
+    var relativeY = thumbImg.offsetTop + Math.floor(sliderThumbImgHeight / 2) + deltaY;
+    relativeY = Math.min(relativeY, sliderDivElementHeight);
+    relativeY = Math.max(0, relativeY);
+    var newTop = Math.min(thumbImg.offsetTop + deltaY, sliderDivElementHeight - Math.floor(sliderThumbImgHeight / 2));
+    newTop = Math.max(-Math.floor(sliderThumbImgHeight / 2), newTop);
+    thumbImg.style.top = newTop + "px";
+    var hue = this._currentColor.getHue();
+    var luminosity = 1 - relativeY / sliderDivElementHeight;
+    var saturation = this._currentColor.getSaturation();
+    this._currentColor.setHsb(hue, saturation, luminosity);
+    this.updateDisplay(sliderElement.id);
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler.prototype._onBThumbDrag = function(event, deltaX, deltaY) {
+    this._moveBThumbToMousePosition(event);
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler.prototype._onHueImageDrag = function(event, deltaX, deltaY) {
+    this._moveCrossHairToMousePosition(event);
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler._AdvancedColor = function() {
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler._AdvancedColor.createInstanceFromRgbTotal = function(validRGBTotal) {
+    AdfAssert.assertNumber(validRGBTotal, "createInstanceFromRgbTotal: input must be number.");
+    var advancedColor = new AdfDhtmlChooseColorBasePeer._CustomPanelHandler._AdvancedColor;
+    advancedColor.setRgbByTotal(validRGBTotal);
+    return advancedColor;
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler._AdvancedColor.prototype.setRgbByTotal = function(validRGBTotal) {
+    var b = validRGBTotal % 256;
+    var rg = Math.floor(validRGBTotal / 256);
+    var g = rg % 256;
+    var r = Math.floor(rg / 256);
+    this._red = r;
+    this._green = g;
+    this._blue = b;
+    this._populateHsb();
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler._AdvancedColor.prototype.setHsb = function(hue, saturation, luminosity) {
+    this._hue = hue;
+    this._saturation = saturation;
+    this._luminosity = luminosity;
+    this._populateRgb();
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler._AdvancedColor.prototype.setRed = function(red) {
+    this._red = red;
+    this._populateHsb();
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler._AdvancedColor.prototype.getRed = function() {
+    return this._red;
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler._AdvancedColor.prototype.setGreen = function(green) {
+    this._green = green;
+    this._populateHsb();
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler._AdvancedColor.prototype.getGreen = function() {
+    return this._green;
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler._AdvancedColor.prototype.setBlue = function(blue) {
+    this._blue = blue;
+    this._populateHsb();
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler._AdvancedColor.prototype.getBlue = function() {
+    return this._blue;
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler._AdvancedColor.prototype.getHue = function() {
+    return this._hue;
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler._AdvancedColor.prototype.getSaturation = function() {
+    return this._saturation;
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler._AdvancedColor.prototype.getLuminosity = function() {
+    return this._luminosity;
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler._AdvancedColor.prototype.getRgbHex = function() {
+    return this._getHex(this._red) + this._getHex(this._green) + this._getHex(this._blue);
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler._AdvancedColor.prototype._getHex = function(dec) {
+    var hexDigits = "0123456789ABCDEF";
+    return hexDigits.charAt(Math.floor(dec / 16)) + hexDigits.charAt(dec % 16);
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler._AdvancedColor.prototype._populateHsb = function() {
+    var red = this._red / 255;
+    var green = this._green / 255;
+    var blue = this._blue / 255;
+    var min = Math.min(Math.min(red, green), blue);
+    var max = Math.max(Math.max(red, green), blue);
+    var delta = max - min;
+    var hue = null;
+    var saturation = null;
+    var luminosity = (max + min) / 2;
+    if (max != 0) {
+      if (delta == 0) {
+        saturation = 0;
+      } else {
+        if (luminosity <= .5) {
+          saturation = delta / (max + min);
+        } else {
+          saturation = delta / (2 - max - min);
+        }
+      }
+      if (delta == 0) {
+        hue = 0;
+      } else {
+        if (red == max) {
+          hue = (green - blue) / delta;
+        } else {
+          if (green == max) {
+            hue = 2 + (blue - red) / delta;
+          } else {
+            hue = 4 + (red - green) / delta;
+          }
+        }
+        hue *= 60;
+        if (hue < 0) {
+          hue += 360;
+        }
+      }
+    } else {
+      saturation = 0;
+      hue = 0;
+    }
+    this._hue = hue;
+    this._saturation = saturation;
+    this._luminosity = luminosity;
+  };
+  AdfDhtmlChooseColorBasePeer._CustomPanelHandler._AdvancedColor.prototype._populateRgb = function() {
+    var hue = this._hue;
+    var saturation = this._saturation;
+    var luminosity = this._luminosity;
+    var red = null;
+    var green = null;
+    var blue = null;
+    if (saturation == 0) {
+      red = green = blue = luminosity;
+    } else {
+      var max = null;
+      var min = null;
+      var mid = null;
+      var factor = null;
+      if (luminosity >= .5) {
+        factor = (1 - luminosity) * saturation;
+      } else {
+        factor = luminosity * saturation;
+      }
+      max = factor + luminosity;
+      min = luminosity - factor;
+      var sector = hue / 60;
+      var sectorIndex = Math.floor(sector);
+      var delta = max - min;
+      switch(sectorIndex) {
+        case 0:
+        ;
+        case 2:
+        ;
+        case 4:
+          mid = (hue / 60 - sectorIndex) * delta + min;
+          break;
+        case 1:
+        ;
+        case 3:
+        ;
+        case 5:
+          mid = (sectorIndex + 1 - hue / 60) * delta + min;
+          break;
+      }
+      switch(sectorIndex) {
+        case 0:
+          red = max;
+          green = mid;
+          blue = min;
+          break;
+        case 1:
+          red = mid;
+          green = max;
+          blue = min;
+          break;
+        case 2:
+          red = min;
+          green = max;
+          blue = mid;
+          break;
+        case 3:
+          red = min;
+          green = mid;
+          blue = max;
+          break;
+        case 4:
+          red = mid;
+          green = min;
+          blue = max;
+          break;
+        case 5:
+          red = max;
+          green = min;
+          blue = mid;
+          break;
+      }
+    }
+    this._red = Math.round(red * 255);
+    this._green = Math.round(green * 255);
+    this._blue = Math.round(blue * 255);
+  };
+};
+
+AdfRichUIPeer.createPeerClass(AdfDhtmlChooseColorBasePeer, "AdfDhtmlChooseColorPeer", false);
+AdfDhtmlChooseColorPeer.InitSubclass = function() {
+  AdfRichUIPeer.addComponentEventHandlers(this, AdfUIInputEvent.MOUSE_DOWN_EVENT_TYPE);
+};
+AdfDhtmlChooseColorPeer.prototype.HandleComponentMouseDown = function(componentEvent) {
+  var eventTarget = componentEvent.getNativeEventTarget();
+  if (this._isCustomDialogOpen()) {
+    this._customPanelHandler.handleComponentMouseDown(componentEvent);
+  }
+};
+
+AdfUIComponents.createComponentClass("AdfRichInputColor", {"componentType":"oracle.adf.RichInputColor", "propertyKeys":[{"name":"changed", "type":"Boolean", "default":false}, {"name":"changedDesc", "type":"String"}, {"name":"autoSubmit", "type":"Boolean", "default":false}, {"name":"accessKey", "type":"String"}, {"name":"contentStyle", "type":"String"}, {"name":"helpTopicId", "type":"String"}, {"name":"disabled", "type":"Boolean", "default":false, "secured":true}, {"name":"label", "type":"String"}, 
+{"name":"readOnly", "type":"Boolean", "default":false, "secured":true}, {"name":"showRequired", "type":"Boolean", "default":false}, {"name":"simple", "type":"Boolean", "default":false}, {"name":"shortDesc", "type":"String"}, {"name":"unsecure", "type":"Object", "secured":true}, {"name":"visible", "type":"Boolean", "default":true}, {"name":"colorData", "type":"Array"}, {"name":"customColorData", "type":"Array"}, "defaultColor", {"name":"width", "type":"Number", "default":7}, {"name":"lastUsedVisible", 
+"type":"Boolean", "default":true}, {"name":"defaultVisible", "type":"Boolean", "default":true}, {"name":"customVisible", "type":"Boolean", "default":true}, {"name":"editable", "type":"String", "default":"inherit"}, {"name":"placeholder", "type":"String"}, {"name":"usage", "type":"String", "default":"auto"}, {"name":"columns", "type":"Number"}, {"name":"autoComplete", "type":"String"}, {"name":"inlineStyle", "type":"String"}, {"name":"chooseId", "type":"String", "secured":true}, {"name":"styleClass", 
+"type":"String"}, {"name":"compact", "type":"Boolean", "default":false}], "superclass":AdfUISelectInput});
+
+AdfRichInputColor.prototype.GetConvertedValue = function(submittedValue) {
+  if ("" == submittedValue) {
+    return null;
+  }
+  return AdfRichInputColor.superclass.GetConvertedValue.call(this, submittedValue);
+};
+AdfRichInputColor.prototype.GetChanges = function() {
+  var changes = AdfRichInputColor.superclass.GetChanges.call(this);
+  var customColors = changes[AdfRichInputColor.CUSTOM_COLOR_DATA];
+  if (customColors != null) {
+    changes[AdfRichInputColor.CUSTOM_COLOR_DATA] = customColors.join("$afr$");
+  }
+  var colors = changes[AdfRichInputColor.COLOR_DATA];
+  if (colors != null) {
+    changes[AdfRichInputColor.COLOR_DATA] = colors.join("$afr$");
+  }
+  return changes;
+};
+
+AdfRichUIPeer.createPeerClass(AdfDhtmlInputBasePeer, "AdfDhtmlInputColorPeer");
+AdfDhtmlInputColorPeer.__LAST_USED_COLOR = "lastUsedColor";
+AdfDhtmlInputColorPeer.InitSubclass = function() {
+  AdfObject.ensureClassInitialization(AdfUIValue);
+  AdfObject.ensureClassInitialization(AdfRichChooseColor);
+  AdfObject.ensureClassInitialization(AdfRichInputColor);
+  AdfObject.ensureClassInitialization(AdfDhtmlChooseColorBasePeer);
+  AdfObject.ensureClassInitialization(AdfDhtmlChooseColorPeer);
+  AdfRichUIPeer.addComponentPropertyGetters(this, AdfRichInputColor.COLOR_DATA, AdfRichInputColor.CUSTOM_COLOR_DATA, AdfRichInputColor.DEFAULT_COLOR, AdfRichInputColor.WIDTH, AdfRichInputColor.LABEL);
+  AdfRichUIPeer.addComponentEventHandlers(this, AdfUIInputEvent.FOCUS_EVENT_TYPE, AdfUIInputEvent.KEY_DOWN_EVENT_TYPE, AdfUIInputEvent.CLICK_EVENT_TYPE);
+  AdfRichUIPeer.addComponentPropertyChanges(this, AdfRichInputColor.LABEL, AdfRichInputColor.DISABLED);
+  AdfRichUIPeer.addSuppressedPPRAttributes(this, AdfDhtmlInputColorPeer.__LAST_USED_COLOR, AdfRichInputColor.CUSTOM_COLOR_DATA);
+  this._GLYPH_ID = "glyph";
+  this._SWATCH_ID = "swatch";
+  this._POPUP_CHOOSECOLOR_ID = "icPop";
+  this._POPUP_WRAPPER_ID = "icPopWrap";
+  this._colorFormat = new TrColorConverter(["#RRGGBB"], true);
+};
+AdfDhtmlInputColorPeer._convertToColorString = function(colorObj) {
+  if (colorObj == null) {
+    return null;
+  }
+  return this._colorFormat.getAsString(colorObj);
+};
+AdfDhtmlInputColorPeer.prototype.handleUpdateFromChooseComponent = function(inputColorComponent, propertyName, newValue) {
+  if (inputColorComponent.getChooseId() == null || propertyName == AdfUIValue.VALUE) {
+    inputColorComponent.setProperty(propertyName, newValue);
+  }
+};
+AdfDhtmlInputColorPeer.prototype.handleReturnFromChooseComponent = function(inputColorComponent, bHidePopup) {
+  if (this._isChooseColorPopupVisible(inputColorComponent)) {
+    this.hidePopup(inputColorComponent, AdfDhtmlInputColorPeer._POPUP_CHOOSECOLOR_ID);
+  }
+  this.returnFocus(inputColorComponent);
+  this.Validate(inputColorComponent);
+  this._returnedFromChooseComponent = 1;
+};
+AdfDhtmlInputColorPeer.prototype.returnFocus = function(inputColorComponent) {
+  if (inputColorComponent.getReadOnly() || inputColorComponent.getDisabled()) {
+    return;
+  }
+  if (!this._isCompact(inputColorComponent)) {
+    var inputDom = AdfDhtmlEditableValuePeer.GetContentNode(inputColorComponent);
+    var domNodeTagName = AdfAgent.AGENT.getNodeName(inputDom);
+    if (domNodeTagName == "INPUT") {
+      AdfFocusUtils.focusElement(inputDom);
+      inputDom.value = inputDom.value;
+    }
+  } else {
+    var clientId = inputColorComponent.getClientId();
+    subid = AdfRichUIPeer.CreateSubId(clientId, AdfDhtmlInputColorPeer._GLYPH_ID);
+    var arrowDom = AdfAgent.AGENT.getElementById(subid);
+    AdfFocusUtils.focusElement(arrowDom);
+  }
+};
+AdfDhtmlInputColorPeer.prototype.initChooseComponentValue = function(inputComponent) {
+  var chooseColorId = AdfDhtmlInputChooseBindingUtils.getChooseId(inputComponent, AdfRichInputColor.CHOOSE_ID);
+  if (chooseColorId != null) {
+    AdfDhtmlInputChooseBindingUtils.updateChooseComponentProperty(inputComponent, chooseColorId, AdfUIValue.VALUE, AdfDhtmlChooseColorBasePeer.__COLOR_VALUE);
+  }
+};
+AdfDhtmlInputColorPeer.prototype.GetComponentCustomColorData = function(component, domElement) {
+  return this._delegatePopupChooseColorGetter(component, AdfRichChooseColor.CUSTOM_COLOR_DATA);
+};
+AdfDhtmlInputColorPeer.prototype.GetComponentColorData = function(component, domElement) {
+  return this._delegatePopupChooseColorGetter(component, AdfRichChooseColor.COLOR_DATA);
+};
+AdfDhtmlInputColorPeer.prototype.GetComponentDefaultColor = function(component, domElement) {
+  return this._delegatePopupChooseColorGetter(component, AdfRichChooseColor.DEFAULT_COLOR);
+};
+AdfDhtmlInputColorPeer.prototype.GetComponentWidth = function(component, domElement) {
+  return this._delegatePopupChooseColorGetter(component, AdfRichChooseColor.WIDTH);
+};
+AdfDhtmlInputColorPeer.prototype.GetComponentLastUsedColor = function(component, domElement) {
+  return this._delegatePopupChooseColorGetter(component, AdfDhtmlChooseColorBasePeer.__LAST_USED_COLOR);
+};
+AdfDhtmlInputColorPeer.prototype.InitDomElement = function(component, domElement) {
+  AdfDhtmlInputColorPeer.superclass.InitDomElement.call(this, component, domElement);
+  return AdfPage.PAGE.scheduleTimer(this, this._hookUpChooseColor, component.getClientId(), 0);
+};
+AdfDhtmlInputColorPeer.prototype.VetoShowNoteWindow = function(component) {
+  if (this._isChooseColorPopupVisible(component)) {
+    return true;
+  }
+  var contentNode = AdfDhtmlEditableValuePeer.GetContentNode(component);
+  if (AdfPage.PAGE.getActiveDomElement() != contentNode) {
+    return true;
+  }
+  return AdfDhtmlInputColorPeer.superclass.VetoShowNoteWindow.call(this);
+};
+AdfDhtmlInputColorPeer.prototype.HandleComponentClick = function(componentEvent) {
+  AdfDhtmlInputColorPeer.superclass.HandleComponentClick.call(this, componentEvent);
+  var component = componentEvent.getCurrentTarget();
+  var sourceComponent = componentEvent.getSource();
+  if (component != sourceComponent) {
+    return;
+  }
+  if (!component.getDisabled()) {
+    this._handleColorPopup(component, componentEvent, true);
+  }
+};
+AdfDhtmlInputColorPeer.prototype.HandleComponentFocus = function(componentEvent) {
+  AdfDhtmlInputColorPeer.superclass.HandleComponentFocus.call(this, componentEvent);
+  var component = this.getComponent();
+  var chooseId = AdfDhtmlInputChooseBindingUtils.getChooseId(component);
+  if (chooseId != null) {
+    AdfDhtmlInputChooseBindingUtils.registerBinding(true, chooseId, component.getClientId());
+  }
+};
+AdfDhtmlInputColorPeer.prototype.HandleComponentKeyDown = function(componentEvent) {
+  var component = componentEvent.getCurrentTarget();
+  var agent = AdfAgent.AGENT;
+  var evt = componentEvent.getNativeEvent();
+  var keyCode = agent.getKeyCode(evt);
+  if (evt.ctrlKey) {
+    return;
+  }
+  switch(keyCode) {
+    case AdfKeyStroke.ENTER_KEY:
+      this.RunValidation(component, componentEvent.getNativeEventTarget());
+    case AdfKeyStroke.ARROWDOWN_KEY:
+      this._handleColorPopup(component, componentEvent, true);
+      break;
+    case AdfKeyStroke.ESC_KEY:
+      this._handleColorPopup(component, componentEvent, false);
+      break;
+  }
+};
+AdfDhtmlInputColorPeer.prototype.GetInlineEditor = function(event) {
+  return AdfDhtmlSimpleLabelEditor.getInlineEditor();
+};
+AdfDhtmlInputColorPeer.prototype._handleColorPopup = function(component, componentEvent, bShow) {
+  var eventTarget = componentEvent.getNativeEventTarget();
+  var arrowId = AdfRichUIPeer.CreateSubId(component.getClientId(), AdfDhtmlInputColorPeer._GLYPH_ID);
+  if (this._isGlyphElement(eventTarget, arrowId)) {
+    var popupChooseColorId = AdfRichUIPeer.CreateSubId(component.getClientId(), AdfDhtmlInputColorPeer._POPUP_CHOOSECOLOR_ID);
+    var popupComponent = AdfPage.PAGE.findComponent(popupChooseColorId);
+    var isPopupVisible = this._isChooseColorPopupVisible(component);
+    if (!isPopupVisible && bShow) {
+      this._showPopupChooseColor(component, popupComponent.getClientId(), arrowId);
+    } else {
+      if (isPopupVisible && !bShow) {
+        this.hidePopup(component, AdfDhtmlInputColorPeer._POPUP_CHOOSECOLOR_ID);
+      }
+    }
+    componentEvent.cancel();
+  }
+};
+AdfDhtmlInputColorPeer.prototype.ComponentValueChanged = function(component, domElement, newValue, oldValue) {
+  AdfDhtmlInputColorPeer.superclass.ComponentValueChanged.call(this, component, domElement, newValue, oldValue);
+  if (AdfPage.PAGE.getAccessibilityMode() != AdfDhtmlPage.SCREEN_READER_ACCESSIBILITY_MODE) {
+    this._updateSwatchDisplay(component, newValue);
+    var chooseColorId = this._getRuntimeChooseColorId(component);
+    AdfDhtmlInputChooseBindingUtils.updateChooseComponentProperty(component, chooseColorId, AdfUIValue.VALUE, AdfDhtmlChooseColorBasePeer.__COLOR_VALUE);
+  }
+};
+AdfDhtmlInputColorPeer.prototype.PopupClosed = function(component, contentDom, popupId) {
+  if (popupId == AdfDhtmlInputColorPeer._POPUP_CHOOSECOLOR_ID) {
+    var clientId = component.getClientId();
+    var popupWrapperId = AdfRichUIPeer.CreateSubId(clientId, AdfDhtmlInputColorPeer._POPUP_WRAPPER_ID);
+    var parentDom = AdfAgent.AGENT.getElementById(popupWrapperId);
+    if (parentDom) {
+      parentDom.appendChild(contentDom);
+    }
+  }
+};
+AdfDhtmlInputColorPeer.prototype.SetDisplayValue = function(component, domElement, newValue) {
+  AdfAssert.assertString(newValue);
+  var domNode = AdfDhtmlEditableValuePeer.GetContentNode(component, domElement);
+  var domNodeTagName = AdfAgent.AGENT.getNodeName(domNode);
+  var isInput = domNodeTagName == "INPUT";
+  if (component.getReadOnly()) {
+    AdfAgent.AGENT.setTextContent(domNode, newValue);
+  } else {
+    domNode.title = newValue;
+    if (isInput) {
+      domNode.value = newValue;
+    } else {
+      AdfAgent.AGENT.setTextContent(domNode, newValue);
+    }
+  }
+};
+AdfDhtmlInputColorPeer.prototype.GetNoteWindowAlignmentNode = function(component, rootNode) {
+  if (this._isCompact(component)) {
+    var clientId = component.getClientId();
+    return AdfAgent.AGENT.getElementById(AdfRichUIPeer.CreateSubId(clientId, AdfDhtmlInputColorPeer._SWATCH_ID));
+  }
+  return AdfDhtmlInputColorPeer.superclass.GetNoteWindowAlignmentNode.call(this, component, rootNode);
+};
+AdfDhtmlInputColorPeer.prototype.ShouldShowHint = function(component, domElement) {
+  if (component.getCompact() == true) {
+    return false;
+  } else {
+    return true;
+  }
+};
+AdfDhtmlInputColorPeer.prototype.ComponentDisabledChanged = function(component, domElement, newValue, oldValue) {
+  var clientId = component.getClientId();
+  var subid = AdfRichUIPeer.CreateSubId(clientId, AdfDhtmlInputColorPeer._GLYPH_ID);
+  var arrowDom = AdfAgent.AGENT.getElementById(subid);
+  var domNode = AdfDhtmlEditableValuePeer.GetContentNode(component, domElement);
+  if (newValue == true) {
+    AdfDomUtils.addCSSClassName(domElement, AdfRichUIPeer.DISABLED_STYLECLASS);
+    arrowDom.style.display = "none";
+    domNode.setAttribute("disabled", "true");
+  } else {
+    AdfDomUtils.removeCSSClassName(domElement, AdfRichUIPeer.DISABLED_STYLECLASS);
+    arrowDom.style.display = "block";
+    domNode.removeAttribute("disabled");
+  }
+};
+AdfDhtmlInputColorPeer.prototype._delegatePopupChooseColorGetter = function(inputColor, propertyName) {
+  var popupChooseColor = this._getPopupChooseColor(inputColor);
+  if (popupChooseColor != null) {
+    return popupChooseColor.getProperty(propertyName);
+  }
+  return null;
+};
+AdfDhtmlInputColorPeer.prototype._getPopupChooseColor = function(inputColor) {
+  var popupChooseColorId = AdfRichUIPeer.CreateSubId(inputColor.getClientId(), AdfDhtmlInputColorPeer._POPUP_CHOOSECOLOR_ID);
+  return AdfPage.PAGE.findComponent(popupChooseColorId);
+};
+AdfDhtmlInputColorPeer.prototype._showPopupChooseColor = function(component, popupContentId, arrowId) {
+  AdfObject.ensureClassInitialization(AdfRichPopup);
+  AdfObject.ensureClassInitialization(AdfDhtmlPopupWindow);
+  var contentDom = AdfAgent.AGENT.getElementById(popupContentId);
+  AdfPage.PAGE.findComponent(contentDom.id).getParent();
+  contentDom.parentNode.removeChild(contentDom);
+  var popupHints = {};
+  popupHints[AdfRichPopup.HINT_ALIGN] = AdfRichPopup.ALIGN_AFTER_START;
+  popupHints[AdfRichPopup.HINT_ALIGN_ID] = arrowId;
+  this.HideNoteWindow();
+  this.showPopup(component, contentDom, popupHints, AdfDhtmlInputColorPeer._POPUP_CHOOSECOLOR_ID);
+};
+AdfDhtmlInputColorPeer.prototype._isChooseColorPopupVisible = function(component) {
+  return this.isPopupVisible(component, AdfDhtmlInputColorPeer._POPUP_CHOOSECOLOR_ID);
+};
+AdfDhtmlInputColorPeer.prototype._isCompact = function(component) {
+  return component.getProperty(AdfRichInputColor.COMPACT);
+};
+AdfDhtmlInputColorPeer.prototype._hookUpChooseColor = function(clientId) {
+  var thisComponent = AdfPage.PAGE.findComponent(clientId);
+  var chooseColorId = this._getRuntimeChooseColorId(thisComponent);
+  if (chooseColorId != null && AdfPage.PAGE.getAccessibilityMode() != AdfDhtmlPage.SCREEN_READER_ACCESSIBILITY_MODE) {
+    AdfDhtmlInputChooseBindingUtils.registerBinding(true, chooseColorId, thisComponent.getClientId());
+    this.initChooseComponentValue(thisComponent);
+  }
+};
+AdfDhtmlInputColorPeer.prototype._updateSwatchDisplay = function(component, newValue) {
+  var swatchId = AdfRichUIPeer.CreateSubId(component.getClientId(), AdfDhtmlInputColorPeer._SWATCH_ID);
+  var swatch = AdfAgent.AGENT.getElementById(swatchId);
+  var newColorString = AdfDhtmlInputColorPeer._convertToColorString(newValue);
+  if (newColorString == null) {
+    newColorString = "No Color";
+    swatch.alt = swatch.title = AdfPage.PAGE.getLookAndFeel().getTranslatedString("af_chooseColor.TIP_NO_COLOR");
+    swatch.style.backgroundColor = "Transparent";
+  } else {
+    if (newValue != null && newValue.alpha == 0) {
+      newColorString = "Transparent";
+      swatch.alt = swatch.title = AdfPage.PAGE.getLookAndFeel().getTranslatedString("af_chooseColor.TIP_TRAN_NO_COLOR");
+      swatch.style.backgroundColor = newColorString;
+    } else {
+      swatch.alt = swatch.title = newColorString.substring(1);
+      swatch.style.backgroundColor = newColorString;
+    }
+  }
+};
+AdfDhtmlInputColorPeer.prototype._getRuntimeChooseColorId = function(thisComponent) {
+  var chooseColorId = AdfDhtmlInputChooseBindingUtils.getChooseId(thisComponent, AdfRichInputColor.CHOOSE_ID);
+  if (chooseColorId == null && !thisComponent.getReadOnly()) {
+    chooseColorId = AdfRichUIPeer.CreateSubId(thisComponent.getClientId(), AdfDhtmlInputColorPeer._POPUP_CHOOSECOLOR_ID);
+  }
+  return chooseColorId;
+};
+AdfDhtmlInputColorPeer.prototype._isGlyphElement = function(eventTarget, glyphId) {
+  var container = AdfAgent.AGENT.getElementById(glyphId);
+  if (container == null) {
+    return false;
+  }
+  if (eventTarget == container) {
+    return true;
+  } else {
+    if (eventTarget == container.getElementsByTagName("img")[0]) {
+      return true;
+    }
+  }
+  return false;
+};

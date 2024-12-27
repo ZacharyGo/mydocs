@@ -1,0 +1,89 @@
+/*
+** Copyright (c) 2020, 2022, Oracle and/or its affiliates. 
+ **
+ **
+ ** Libraries needed for Guided Learning integration.
+ ** ER# 30472954 
+ ** 
+ ** IMPORTANT: If you make changes in this file, you MUST increment the file name
+ ** and adjust any references to it.  This is because web browsers cache js 
+ ** files based on their name.
+ ** 
+ **  shruagra    07/26/2022 - Enh 32872167 - OGL: SAVE ROUTABLE PARAMETERS TO A WINDOWS VARIABLE
+ **  shruagra    07/26/2022 - Enh 33804970 - EXTENDING OGLINFO OBJECT 
+ **  shruagra    02/14/2022 - Enh 33189575 - Fixed bug for setting default value of OGL Server
+ **  shruagra    12/17/2021 - Enh 33189575 - Remove role mapping and custom script
+ **  ssthumma    12-09-2019 - Created 
+ ** 
+ **   
+ */
+
+function injectGuidedLearningJS(appId, displayName, GUID, userRoles, userLanguage, oldRolesMapping,
+                                fndGlobalItemNodeId , taskItemNodeId) {
+    
+    window.oglInfo = window.oglInfo || {};
+    window.oglInfo.fields = Object.assign({
+        user_id : GUID, user_name : displayName
+    }, window.oglInfo.fields || {});
+    window.oglInfo.lang = userLanguage;
+    window.oglInfo.adfParameters = {
+      fndGlobalItemNodeId : fndGlobalItemNodeId,
+      taskItemNodeId : taskItemNodeId
+    };
+    window.oglInfo.oldRoleMapping = oldRolesMapping === "" ? null : JSON.parse(oldRolesMapping);
+    window.oglInfo.fusionRoles = JSON.parse(getUserRoles(userRoles));
+    window.iridize = window.iridize || function (e, t, n) {
+        return iridize.api.call(e, t, n);
+    };
+    iridize.api = iridize.api || 
+    {
+        q : [], call : function (e, t, n) {
+            iridize.api.q.push( {
+                method : e, data : t, callback : n
+            });
+        }
+    };
+    iridize.appId = appId;  
+}
+
+/**
+ * Triggered by load event on the window and sends a call up to
+ * the server via the onLoadEvent
+ * @param event event triggering this.
+ */
+function triggerOnLoad(oglServer) {
+
+    // Set the default of OGL Server for backward compatibility i.e. for the existing users who haven't yet configured the OGL Server
+    if (oglServer == null || oglServer.length === 0) {
+        oglServer = 'guidedlearning.oracle.com';
+    }
+    var e = document.createElement('script');
+    var t = document.getElementsByTagName('script')[0];
+    e.src = ('https:' == document.location.protocol ? 'https:' : 'http:') + '//' + oglServer + '/player/latest/static/js/iridizeLoader.min.js';
+    e.type = 'text/javascript';
+    e.async = true;
+    t.parentNode.insertBefore(e, t);
+
+}
+
+/**
+ * If user roles have been already injected for this session, get them from local storage.
+ * Otherwise, replace the local storage with the updated roles.
+ * @param userRoles 
+ */
+function getUserRoles(userRoles)
+{
+  // Local Storage
+  var savedUserRoles;
+  if (userRoles === "null")
+  {
+    savedUserRoles = localStorage.getItem("userRoles");
+  }
+  else 
+  {
+    localStorage.setItem("userRoles", userRoles);
+    savedUserRoles = userRoles;
+  }
+
+  return savedUserRoles;
+}

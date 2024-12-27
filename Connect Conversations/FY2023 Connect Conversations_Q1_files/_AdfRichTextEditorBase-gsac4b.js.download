@@ -1,0 +1,453 @@
+AdfRichUIPeer.createPeerClass(AdfDhtmlEditableValuePeer, "AdfDhtmlRichTextEditorBasePeer", false);
+AdfDhtmlRichTextEditorBasePeer.InitSubclass = function() {
+  AdfRichUIPeer.addComponentEventHandlers(this, AdfUIInputEvent.FOCUS_EVENT_TYPE, AdfActionEvent.ACTION_EVENT_TYPE, AdfUIInputEvent.KEY_UP_EVENT_TYPE);
+  AdfRichUIPeer.addSuppressedPPRAttributes(this, "editMode");
+  AdfRichUIPeer.addComponentPropertyGetters(this, "label");
+  AdfRichUIPeer.addComponentPropertyChanges(this, "label");
+  AdfObject.ensureClassInitialization(AdfDhtmlInputBasePeer);
+  AdfDhtmlRichTextEditorBasePeer.InitConstants();
+};
+AdfDhtmlRichTextEditorBasePeer.InitConstants = function() {
+  if (this._CONTENT_FIELD_SUB_ID != null) {
+    return;
+  }
+  this._CONTENT_INPUT_CONTAINER_SUBID = "_cic";
+  this._CONTENT_FIELD_SUB_ID = "cont";
+  this._SOURCE_FIELD_SUB_ID = "src";
+  this._FIELD_ID_ATTR_NAME = "__afrRichTextEditorFieldId";
+  this._SOURCE_FIELD_ID_ATTR_NAME = "__afrRichTextEditorSourceFieldId";
+  this.STYLE_BOLD = "style_bold";
+  this.STYLE_ITALIC = "style_italic";
+  this.STYLE_UNDERLINE = "style_underline";
+  this.STYLE_STRIKETHROUGH = "style_strikethrough";
+  this.STYLE_LIST_UNORDERED = "style_list_unordered";
+  this.STYLE_LIST_ORDERED = "style_list_ordered";
+  this.STYLE_INDENT = "style_indent";
+  this.STYLE_OUTDENT = "style_outdent";
+  this.STYLE_JUSTIFY_LEFT = "style_justify_left";
+  this.STYLE_JUSTIFY_CENTER = "style_justify_center";
+  this.STYLE_JUSTIFY_RIGHT = "style_justify_right";
+  this.STYLE_JUSTIFY_FULL = "style_justify_full";
+  this.STYLE_SUPERSCRIPT = "style_superscript";
+  this.STYLE_SUBSCRIPT = "style_subscript";
+  this.STYLE_COLOR_FOREGROUND = "style_color_foreground";
+  this.STYLE_COLOR_BACKGROUND = "style_color_background";
+  this.STYLE_FONT_SIZE = "style_font_size";
+  this.STYLE_FONT_NAME = "style_font_name";
+  this.COMMAND_UNDO = "cmd_undo";
+  this.COMMAND_REDO = "cmd_redo";
+  this.COMMAND_LINK = "cmd_link";
+  this.COMMAND_UNLINK = "cmd_unlink";
+  this.COMMAND_CLEAR_STYLING = "cmd_clear_styling";
+  this.COMMAND_INSERT = "cmd_insert";
+  this.COMMAND_MODE_RICH_TEXT = "cmd_mode_rich_text";
+  this.COMMAND_MODE_CODE = "cmd_mode_code";
+  this._execCommandMap = new Object;
+  this._execCommandMap[this.STYLE_BOLD] = "bold";
+  this._execCommandMap[this.STYLE_ITALIC] = "italic";
+  this._execCommandMap[this.STYLE_UNDERLINE] = "underline";
+  this._execCommandMap[this.STYLE_STRIKETHROUGH] = "strikethrough";
+  this._execCommandMap[this.STYLE_LIST_UNORDERED] = "insertunorderedlist";
+  this._execCommandMap[this.STYLE_LIST_ORDERED] = "insertorderedlist";
+  this._execCommandMap[this.STYLE_INDENT] = "indent";
+  this._execCommandMap[this.STYLE_OUTDENT] = "outdent";
+  this._execCommandMap[this.STYLE_JUSTIFY_LEFT] = "justifyleft";
+  this._execCommandMap[this.STYLE_JUSTIFY_CENTER] = "justifycenter";
+  this._execCommandMap[this.STYLE_JUSTIFY_RIGHT] = "justifyright";
+  this._execCommandMap[this.STYLE_JUSTIFY_FULL] = "justifyfull";
+  this._execCommandMap[this.STYLE_SUPERSCRIPT] = "superscript";
+  this._execCommandMap[this.STYLE_SUBSCRIPT] = "subscript";
+  this._execCommandMap[this.STYLE_COLOR_FOREGROUND] = "forecolor";
+  this._execCommandMap[this.STYLE_COLOR_BACKGROUND] = "backcolor";
+  this._execCommandMap[this.STYLE_FONT_SIZE] = "fontsize";
+  this._execCommandMap[this.STYLE_FONT_NAME] = "fontname";
+  this._execCommandMap[this.COMMAND_UNDO] = "undo";
+  this._execCommandMap[this.COMMAND_REDO] = "redo";
+  this._execCommandMap[this.COMMAND_LINK] = "createlink";
+  this._execCommandMap[this.COMMAND_UNLINK] = "unlink";
+  this._execCommandMap[this.COMMAND_CLEAR_STYLING] = "removeformat";
+  this._execCommandMap[this.COMMAND_INSERT] = "insert";
+  this._execCommandMap[this.COMMAND_MODE_RICH_TEXT] = "moderichtext";
+  this._execCommandMap[this.COMMAND_MODE_CODE] = "modecode";
+};
+AdfDhtmlRichTextEditorBasePeer.prototype.Init = function(component) {
+  AdfDhtmlRichTextEditorBasePeer.superclass.Init.call(this, component);
+  this._ignoreEvents = {};
+};
+AdfDhtmlRichTextEditorBasePeer.prototype.InitDomElement = function(component, domElement) {
+  AdfDhtmlRichTextEditorBasePeer.superclass.InitDomElement.call(this, component, domElement);
+};
+AdfDhtmlRichTextEditorBasePeer.prototype.needsResizeNotify = function(component) {
+  return true;
+};
+AdfDhtmlRichTextEditorBasePeer.prototype.GetInlineEditor = function(event) {
+  return AdfDhtmlSimpleLabelEditor.getInlineEditor();
+};
+AdfDhtmlRichTextEditorBasePeer.prototype.getCurrentContent = function(component, keepOriginal) {
+  var editingAgent = AdfEditingAgent.getInstance();
+  return editingAgent.getInlineFrameContent(this._getContentField(component), keepOriginal);
+};
+AdfDhtmlRichTextEditorBasePeer.prototype.isEmpty = function(value) {
+  if (!value) {
+    value = this.GetSubmittedValue(this.getComponent(), this.getDomElement());
+  }
+  value = value.replace(/(<([^>]+)>)/ig, "");
+  value = AdfUIUtils.trim(value);
+  return value.length == 0;
+};
+AdfDhtmlRichTextEditorBasePeer.prototype.addBinding = function(componentClientId, componentClient, command, commandParameter, propertyName, eventType) {
+  AdfAssert.assertString(componentClientId);
+  AdfAssert.assertString(command);
+  if (command.substring(0, 5) == "style") {
+    AdfAssert.assertString(propertyName);
+    AdfAssert.assertStringOrNull(eventType);
+    if (eventType == undefined) {
+      eventType = AdfActionEvent.ACTION_EVENT_TYPE;
+    }
+    this.AddStyleBinding(componentClientId, propertyName, command, eventType);
+  } else {
+    if (command.substring(0, 3) == "cmd") {
+      this._addCommandBinding(componentClientId, componentClient, command, commandParameter);
+    } else {
+      AdfLogger.LOGGER.severe("Unable to add binding [", command, "] for ", componentClientId, " to ", this.getComponent().getClientId());
+    }
+  }
+};
+AdfDhtmlRichTextEditorBasePeer.prototype.executeCommand = function(cmd, value) {
+  this._execCommand(cmd, value);
+};
+AdfDhtmlRichTextEditorBasePeer.prototype.setCodeEditingMode = function(newCodeEditingMode) {
+  if (this.isCodeEditingMode() != newCodeEditingMode) {
+    var component = this.getComponent();
+    if (newCodeEditingMode) {
+      component.setProperty("editMode", "source", true);
+    } else {
+      component.setProperty("editMode", "wysiwyg", true);
+    }
+    this.HandleCodeEditingModeChange(component);
+  }
+};
+AdfDhtmlRichTextEditorBasePeer.prototype.isCodeEditingMode = function() {
+  return this.getComponent().getEditMode() == "source";
+};
+AdfDhtmlRichTextEditorBasePeer.prototype.HandleCodeEditingModeChange = function(component) {
+};
+AdfDhtmlRichTextEditorBasePeer.prototype.GetComponentLabel = function(component, domElement) {
+  var labelElements = domElement.getElementsByTagName("LABEL");
+  var labelElement = labelElements.length ? labelElements[0] : null;
+  if (labelElement != null) {
+    var clientId = component.getClientId();
+    var fieldSubId = AdfRichUIPeer.CreateSubId(clientId, "content");
+    if (labelElement.htmlFor == fieldSubId) {
+      return AdfAgent.AGENT.getTextContent(labelElement);
+    }
+    var sourceFieldSubId = AdfRichUIPeer.CreateSubId(clientId, AdfDhtmlRichTextEditorBasePeer._SOURCE_FIELD_SUB_ID);
+    if (labelElement.htmlFor == sourceFieldSubId) {
+      return AdfAgent.AGENT.getTextContent(labelElement);
+    }
+  }
+  return null;
+};
+AdfDhtmlRichTextEditorBasePeer.prototype.HandleComponentFocus = function(componentEvent) {
+  AdfDhtmlRichTextEditorBasePeer.superclass.HandleComponentFocus.call(this, componentEvent);
+  var agent = AdfAgent.AGENT;
+  var component = this.getComponent();
+  if (!component.getReadOnly()) {
+    this.StopDialogsFromBeingInactivatedDueToIframes();
+    if (!this._commandBeingProcessed) {
+      var activeNode = AdfPage.PAGE.getActiveDomElement();
+      var contentNode = this._getContentField(component);
+      if (activeNode == contentNode) {
+        this.focus(component);
+        var value = this._getSourceCodeField(component).value;
+        AdfAgent.AGENT.setExpandoProperty(contentNode, AdfDhtmlInputBasePeer._LAST_VALUE, value);
+      }
+    }
+  }
+};
+AdfDhtmlRichTextEditorBasePeer.prototype.HandleComponentClick = function(componentEvent) {
+  AdfDhtmlRichTextEditorBasePeer.superclass.HandleComponentClick.call(this, componentEvent);
+  var target = componentEvent.getNativeEventTarget();
+  if (target && target.nodeName == "LABEL") {
+    this.focus(this.getComponent());
+  }
+};
+AdfDhtmlRichTextEditorBasePeer.prototype.GetSubmittedValue = function(component, domElement) {
+  if (this._isTouch && this.WasSubmitted(component)) {
+    var richTextField = this._getContentField(component);
+    var newValue = this.getCurrentContent(component);
+    var lastValue = AdfAgent.AGENT.getExpandoProperty(richTextField, AdfDhtmlInputBasePeer._LAST_VALUE);
+    if (lastValue != newValue && !(lastValue === undefined)) {
+      this.UpdateValue();
+    }
+  }
+  if (component.getReadOnly()) {
+    var domNode = AdfDhtmlEditableValuePeer.GetContentNode(component, domElement);
+    return domNode.innerHTML;
+  }
+  var domNode = this._getSourceCodeField(component);
+  return domNode.value;
+};
+AdfDhtmlRichTextEditorBasePeer.prototype.SetDisplayValue = function(component, domElement, newValue) {
+  AdfAssert.assertString(newValue);
+  if (component.getReadOnly()) {
+    domElement.innerHTML = newValue;
+  } else {
+    this.SetContentFieldValue(component, newValue);
+  }
+};
+AdfDhtmlRichTextEditorBasePeer.prototype.SetContentFieldValue = function(component, newValue) {
+  var contentField = this._getContentField(component);
+  this._setInlineFrameContent(contentField, newValue);
+};
+AdfDhtmlRichTextEditorBasePeer.prototype.HandleComponentAction = function(componentEvent) {
+  this._styleBindingActionListener(componentEvent);
+  this._commandBindingActionListener(componentEvent);
+};
+AdfDhtmlRichTextEditorBasePeer.prototype._styleBindingActionListener = function(event) {
+};
+AdfDhtmlRichTextEditorBasePeer.prototype.ShowFormatHint = function() {
+  return true;
+};
+AdfDhtmlRichTextEditorBasePeer.prototype.ComponentRemoved = function(component) {
+  var readOnly = component.getReadOnly();
+  if (!readOnly) {
+    page.unregisterLoadingComponent(component);
+  }
+  if (!(readOnly || component.getDisabled())) {
+    this.RemoveStyleBindings(component);
+    this._removeCommandBindings(component);
+    this.RemoveContextChangeListeners(component);
+    this.DestroyEditor(component);
+    if (this._loadCallback) {
+      AdfAgent.AGENT.removeBubbleEventListener(this._getContentField(component), "load", this._loadCallback);
+      delete this._loadCallback;
+    }
+    AdfRichTextEditorBehaviorManager.getInstance().unregisterComponent(component);
+    delete this._hadFirstFocus;
+    delete this._lastSelectionRange;
+  }
+  AdfDhtmlRichTextEditorBasePeer.superclass.ComponentRemoved.call(this, component);
+};
+AdfDhtmlRichTextEditorBasePeer.prototype.ScrollIntoView = function(component, focus, subTargetId) {
+  var rootElement = this.getDomElement();
+  rootElement.scrollIntoView();
+  var domDoc = this.getDomDocument();
+  var readOnly = component.getReadOnly();
+  var inlineFrame;
+  if (!readOnly) {
+    inlineFrame = this._getContentField(component);
+    var editingAgent = AdfEditingAgent.getInstance();
+    domDoc = editingAgent.getInlineFrameDocument(inlineFrame);
+  }
+  var subTargetElement = null;
+  if (subTargetId != null) {
+    subTargetElement = domDoc.getElementById(subTargetId);
+    if (subTargetElement) {
+      subTargetElement.scrollIntoView();
+    } else {
+      AdfLogger.LOGGER.warning("Invalid subTargetId specified:" + subTargetId);
+    }
+  }
+  if (focus) {
+    if (subTargetElement) {
+      AdfFocusUtils.focusElement(subTargetElement);
+    } else {
+      if (!readOnly) {
+        AdfFocusUtils.focusElement(inlineFrame);
+      }
+    }
+  }
+};
+AdfDhtmlRichTextEditorBasePeer.prototype.RemoveStyleBindings = function(component) {
+};
+AdfDhtmlRichTextEditorBasePeer.prototype.RemoveContextChangeListeners = function(component) {
+};
+AdfDhtmlRichTextEditorBasePeer.prototype.DestroyEditor = function(component) {
+};
+AdfDhtmlRichTextEditorBasePeer.prototype.HandleContextChanged = function() {
+};
+AdfDhtmlRichTextEditorBasePeer.prototype.UpdateValue = function() {
+};
+AdfDhtmlRichTextEditorBasePeer.prototype.StopDialogsFromBeingInactivatedDueToIframes = function() {
+};
+AdfDhtmlRichTextEditorBasePeer.prototype.AddStyleBinding = function(componentId, propertyName, styleKey, eventType) {
+};
+AdfDhtmlRichTextEditorBasePeer.prototype._commandBindingActionListener = function(event) {
+  if (this._commandObservers == undefined || this._commandBeingProcessed) {
+    return;
+  }
+  this._commandBeingProcessed = true;
+  var eventComponentId = event.getSource().getClientId();
+  var observers = this._commandObservers;
+  var length = observers.length;
+  var insertCmdExecuted = false;
+  for (var i = 0;i < length;i++) {
+    var observer = observers[i];
+    if (observer.componentId == eventComponentId) {
+      event.setPartial(true);
+      var commandKey = observer.command;
+      this._execCommand(commandKey, observer.commandParameter);
+      this.HandleContextChanged();
+      event.cancel();
+      if (commandKey == AdfDhtmlRichTextEditorBasePeer.COMMAND_INSERT) {
+        insertCmdExecuted = true;
+      }
+    }
+  }
+  this.UpdateValue();
+  if (insertCmdExecuted) {
+    var component = this.getComponent();
+    this.Validate(component, this.GetSubmittedValue(component, this.getDomElement()));
+  }
+  delete this._commandBeingProcessed;
+};
+AdfDhtmlRichTextEditorBasePeer.prototype._addCommandBinding = function(componentId, bindComponent, command, commandParameter) {
+  AdfAssert.assertString(componentId);
+  AdfAssert.assertString(command);
+  if (!this._commandObservers) {
+    this._commandObservers = new Array;
+  }
+  var length = this._commandObservers.length;
+  var commandObserver = null;
+  for (var i = 0;i < length;i++) {
+    var observerObj = this._commandObservers[i];
+    if (observerObj.componentId == componentId && observerObj.command == command) {
+      observerObj.commandParameter = commandParameter;
+      commandObserver = observerObj;
+      break;
+    }
+  }
+  if (commandObserver == null) {
+    commandObserver = {componentId:componentId, command:command, commandParameter:commandParameter};
+    this._commandObservers.push(commandObserver);
+  }
+  if (!bindComponent.isDescendant(this.getComponent())) {
+    bindComponent.addEventListener(AdfActionEvent.ACTION_EVENT_TYPE, this._commandBindingActionListener, this);
+  }
+};
+AdfDhtmlRichTextEditorBasePeer.prototype._removeCommandBindings = function(component) {
+  var observers = this._commandObservers;
+  if (observers == undefined) {
+    return;
+  }
+  var length = observers.length;
+  var listener = this._commandBindingActionListener;
+  for (var i = 0;i < length;i++) {
+    var observer = observers[i];
+    var boundComponent = AdfPage.PAGE.findComponent(observer.componentId);
+    if (boundComponent != undefined) {
+      if (!boundComponent.isDescendant(component)) {
+        boundComponent.removeEventListener(AdfActionEvent.ACTION_EVENT_TYPE, listener, this);
+      }
+    }
+  }
+};
+AdfDhtmlRichTextEditorBasePeer.prototype._isInPopup = function() {
+  var parent = null;
+  try {
+    parent = this.getComponent().getParent();
+  } catch (err) {
+  }
+  if (parent == null) {
+    return false;
+  }
+  while (parent != null) {
+    if (parent instanceof AdfRichPopup) {
+      return true;
+    } else {
+      try {
+        parent = parent.getParent();
+      } catch (err) {
+        return false;
+      }
+    }
+    if (parent == null) {
+      return false;
+    }
+  }
+};
+AdfDhtmlRichTextEditorBasePeer.prototype._isContainerStretched = function() {
+  return AdfDomUtils.containsCSSClassName(AdfRichUIPeer.getDomNodeForComponent(this.getComponent()), "p_AFStretched");
+};
+AdfDhtmlRichTextEditorBasePeer.prototype._getContentField = function(component) {
+  var subId = AdfRichUIPeer.CreateSubId(component.getClientId(), AdfDhtmlRichTextEditorBasePeer._CONTENT_FIELD_SUB_ID);
+  var domNode = AdfAgent.AGENT.getElementById(subId);
+  AdfAssert.assertDomElement(domNode);
+  return domNode;
+};
+AdfDhtmlRichTextEditorBasePeer.prototype._getSourceCodeField = function(component) {
+  var subId = AdfAgent.AGENT.getExpandoProperty(AdfRichUIPeer.getDomElementForComponent(component), AdfDhtmlRichTextEditorBasePeer._SOURCE_FIELD_ID_ATTR_NAME);
+  var domNode = AdfAgent.AGENT.getElementById(subId);
+  AdfAssert.assertDomElement(domNode);
+  return domNode;
+};
+AdfDhtmlRichTextEditorBasePeer.prototype._getReadOnlyContentField = function(component) {
+  var subId = AdfRichUIPeer.CreateSubId(component.getClientId(), "content");
+  var domNode = AdfAgent.AGENT.getElementById(subId);
+  AdfAssert.assertDomElement(domNode);
+  return domNode;
+};
+
+function AdfRichTextEditorBehaviorManager() {
+  this.Init();
+  this._queuedBindings = [];
+  this._registeredComponents = [];
+}
+AdfObject.createSubclass(AdfRichTextEditorBehaviorManager);
+AdfRichTextEditorBehaviorManager.getInstance = function() {
+  if (AdfRichTextEditorBehaviorManager._INSTANCE == undefined) {
+    AdfRichTextEditorBehaviorManager._INSTANCE = new AdfRichTextEditorBehaviorManager;
+  }
+  return AdfRichTextEditorBehaviorManager._INSTANCE;
+};
+AdfRichTextEditorBehaviorManager.prototype.addBinding = function(componentClientId, boundComponentId, behaviorComponent, command, commandParameter, propertyName, eventType) {
+  var length = this._queuedBindings.length;
+  for (var i = 0;i < length;i++) {
+    var observerObj = this._queuedBindings[i];
+    if (observerObj.componentId == componentClientId && observerObj.boundComponentId == boundComponentId && observerObj.command == command) {
+      observerObj.commandParameter = commandParameter;
+      return false;
+    }
+  }
+  var richTextEditorComponent = AdfPage.PAGE.findComponent(componentClientId);
+  if (richTextEditorComponent != null) {
+    if (AdfCollections.indexOf(this._registeredComponents, componentClientId) >= 0) {
+      var peer = richTextEditorComponent.getPeer();
+      peer.addBinding(boundComponentId, behaviorComponent, command, commandParameter, propertyName, eventType);
+      return true;
+    }
+  }
+  var bindingObj = {componentId:componentClientId, boundComponentId:boundComponentId, command:command, commandParameter:commandParameter, propertyName:propertyName, eventType:eventType};
+  this._queuedBindings.push(bindingObj);
+  return false;
+};
+AdfRichTextEditorBehaviorManager.prototype.registerComponent = function(component) {
+  var componentId = component.getClientId();
+  var peer = component.getPeer();
+  this._registeredComponents.push(componentId);
+  var bindings = this._queuedBindings;
+  var newBindings = [];
+  var length = bindings.length;
+  for (var i = 0;i < length;i++) {
+    var binding = bindings[i];
+    var behaviorComponent = AdfPage.PAGE.findComponent(binding.boundComponentId);
+    var richTextEditor = AdfPage.PAGE.findComponent(binding.componentId);
+    var realRichTextEditorId = null;
+    if (richTextEditor != null) {
+      realRichTextEditorId = richTextEditor.getClientId();
+    }
+    if (realRichTextEditorId == componentId) {
+      peer.addBinding(binding.boundComponentId, behaviorComponent, binding.command, binding.commandParameter, binding.propertyName, binding.eventType);
+    } else {
+      newBindings.push(binding);
+    }
+  }
+  this._queuedBindings = newBindings;
+};
+AdfRichTextEditorBehaviorManager.prototype.unregisterComponent = function(component) {
+  AdfCollections.removeValue(this._registeredComponents, component.getClientId());
+};
+AdfRichTextEditorBehaviorManager.prototype.isComponentIdRegistered = function(componentId) {
+  return AdfCollections.indexOf(this._registeredComponents, componentId) >= 0;
+};

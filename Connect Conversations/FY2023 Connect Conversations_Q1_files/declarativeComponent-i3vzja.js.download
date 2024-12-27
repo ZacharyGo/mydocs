@@ -1,0 +1,26 @@
+AdfUIComponents.createComponentClass("AdfUIInclude", {"componentType":"oracle.adf.Include", "propertyKeys":[]});
+
+AdfUIComponents.createComponentClass("AdfUIDynamicDeclarativeComponent", {"componentType":"oracle.adf.DynamicDeclarativeComponent", "namingContainer":true, "superclass":AdfUIInclude});
+
+AdfUIComponents.createComponentClass("AdfUIDeclarativeComponent", {"componentType":"oracle.adf.DeclarativeComponent", "namingContainer":true, "superclass":AdfUIInclude});
+
+AdfUIComponents.createComponentClass("AdfRichDeclarativeComponent", {"componentType":"oracle.adf.RichDeclarativeComponent", "namingContainer":true, "superclass":AdfUIDeclarativeComponent});
+
+AdfRichUIPeer.createPeerClass(AdfRichUIPeer, "AdfDhtmlDeclarativeComponentPeer", false);
+AdfDhtmlDeclarativeComponentPeer.prototype.getDomElement = function() {
+  return null;
+};
+AdfDhtmlDeclarativeComponentPeer.prototype.getDomContentElement = function() {
+  return AdfRichUIPeer.GetDomContentElementForNode(this.getDomNode());
+};
+AdfDhtmlDeclarativeComponentPeer.prototype.getComponentParent = function(component) {
+  var parentId = component.getProperty("_parentId");
+  var parentComponent = AdfPage.PAGE.findComponent(parentId);
+  if (parentComponent) {
+    return parentComponent;
+  } else {
+    return AdfDhtmlDeclarativeComponentPeer.superclass.getComponentParent.call(this, component);
+  }
+};
+
+AdfUIComponents.createComponentClass("AdfRichDynamicDeclarativeComponent", {"componentType":"oracle.adf.RichDynamicDeclarativeComponent", "namingContainer":true, "superclass":AdfUIDynamicDeclarativeComponent});

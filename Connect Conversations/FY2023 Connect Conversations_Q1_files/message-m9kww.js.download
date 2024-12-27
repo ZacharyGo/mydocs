@@ -1,0 +1,155 @@
+AdfRichUIPeer.createPeerClass(AdfRichUIPeer, "AdfDhtmlMessagePeer");
+
+AdfUIComponents.createComponentClass("AdfUIMessages", {"componentType":"org.apache.myfaces.trinidad.Messages"});
+
+AdfUIComponents.createComponentClass("AdfRichMessages", {"componentType":"oracle.adf.RichMessages", "propertyKeys":[{"name":"inlineStyle", "type":"String"}, {"name":"styleClass", "type":"String"}, {"name":"shortDesc", "type":"String"}, {"name":"unsecure", "type":"Object", "secured":true}, {"name":"visible", "type":"Boolean", "default":true}, {"name":"message", "type":"String"}, {"name":"text", "type":"String"}, {"name":"globalOnly", "type":"Boolean", "default":false}, {"name":"inline", "type":"Boolean", 
+"default":false}], "superclass":AdfUIMessages});
+
+AdfRichUIPeer.createPeerClass(AdfRichUIPeer, "AdfDhtmlMessagesPeer");
+AdfDhtmlMessagesPeer.InitSubclass = function() {
+  AdfRichUIPeer.addComponentPropertyGetters(this, AdfRichMessages.SHORT_DESC);
+  AdfRichUIPeer.addComponentPropertyGetters(this, AdfRichMessages.MESSAGE);
+  AdfRichUIPeer.addComponentPropertyGetters(this, AdfRichMessages.TEXT);
+  AdfRichUIPeer.addComponentPropertyGetters(this, AdfRichMessages.GLOBAL_ONLY);
+  AdfDhtmlMessagesPeer._ATTRIBUTE_GLOBAL_ONLY = "_afrGlobalOnly";
+  AdfDhtmlMessagesPeer._ATTRIBUTE_MESSAGE = "_afrMessage";
+  AdfDhtmlMessagesPeer._ATTRIBUTE_TEXT = "_afrText";
+  AdfDhtmlMessagesPeer._HEADER_STYLE_CLASS = "af|messages::header";
+  AdfDhtmlMessagesPeer._HEADER_ICON_STYLE_CLASS = "af|messages::header-icon";
+  AdfDhtmlMessagesPeer._HEADER_TEXT_STYLE_CLASS = "af|messages::header-text";
+  AdfDhtmlMessagesPeer._MESSAGES_BODY_CLASS = "af|messages::body";
+  AdfDhtmlMessagesPeer._MESSAGES_INTRO_CLASS = "af|messages::intro";
+  AdfDhtmlMessagesPeer._MESSAGES_GROUP_TITLE_CLASS = "af|messages::message-group-title";
+  AdfDhtmlMessagesPeer._MESSAGES_TYPE_CLASS = "af|messages::type";
+  AdfDhtmlMessagesPeer._MESSAGES_DETAIL_CLASS = "af|messages::detail";
+};
+AdfDhtmlMessagesPeer.prototype.componentRemoved = function(component) {
+  AdfDhtmlMessagesPeer.superclass.componentRemoved.call(this, component);
+  var page = AdfPage.PAGE;
+  var defaultMessageHandlerId = page.getDefaultMessageHandlerComponentId();
+  var slaveMessageHandlerId = page.getMessageHandlerSlaveComponentId();
+  var clientId = component.getClientId();
+  var reset = false;
+  if (clientId == defaultMessageHandlerId) {
+    reset = true;
+    var documentId;
+    var ancestor = component;
+    while (ancestor && !documentId) {
+      ancestor = ancestor.getParent();
+      if (ancestor && ancestor instanceof AdfRichDocument) {
+        documentId = ancestor.getClientId();
+      }
+    }
+    defaultMessageHandlerId = documentId;
+  }
+  if (clientId == slaveMessageHandlerId) {
+    AdfMessageUtils.HideMessagesDialog();
+    reset = true;
+    slaveMessageHandlerId = null;
+  }
+  if (reset) {
+    page.setDefaultMessageHandlerComponentId(defaultMessageHandlerId, slaveMessageHandlerId);
+  }
+};
+AdfDhtmlMessagesPeer.prototype.isMessagesDialogShowable = function() {
+  return false;
+};
+AdfDhtmlMessagesPeer.prototype.setMessagesDialogShown = function(visible) {
+};
+AdfDhtmlMessagesPeer.prototype.GetComponentShortDesc = function(component, root) {
+  return AdfAgent.AGENT.getAttribute(root, "title");
+};
+AdfDhtmlMessagesPeer.prototype.GetComponentMessage = function(component, root) {
+  return AdfAgent.AGENT.getAttribute(root, AdfDhtmlMessagesPeer._ATTRIBUTE_MESSAGE);
+};
+AdfDhtmlMessagesPeer.prototype.GetComponentText = function(component, root) {
+  return AdfAgent.AGENT.getAttribute(root, AdfDhtmlMessagesPeer._ATTRIBUTE_TEXT);
+};
+AdfDhtmlMessagesPeer.prototype.GetComponentGlobalOnly = function(component, root) {
+  return AdfAgent.AGENT.getBooleanAttribute(root, AdfDhtmlMessagesPeer._ATTRIBUTE_GLOBAL_ONLY);
+};
+AdfDhtmlMessagesPeer.prototype.MessageShow = function(maxType, messages) {
+  this._messageUpdate(maxType, messages, true);
+};
+AdfDhtmlMessagesPeer.prototype.MessageNotify = function(maxType, messages) {
+  AdfDhtmlMessagesPeer.superclass.MessageNotify.call(this, maxType, messages);
+  this._messageUpdate(maxType, messages, false);
+};
+AdfDhtmlMessagesPeer.prototype._messageUpdate = function(maxType, messages, alwaysShow) {
+  var page = AdfPage.PAGE;
+  var component = this.getComponent();
+  var clientId = component.getClientId();
+  var allMessages = page.getAllMessages();
+  var root = this.getDomElement();
+  var globalOnly = this.GetComponentGlobalOnly(component, root);
+  var globalMessages = allMessages[clientId];
+  var globalMessageCount = 0;
+  if (globalMessages != null) {
+    globalMessageCount = globalMessages.length;
+  }
+  if (alwaysShow && !AdfMessageUtils.isPageLevelBoxNeeded(page, globalMessages, globalOnly)) {
+    for (var messageId in allMessages) {
+      var compMessages = allMessages[messageId];
+      if (compMessages != null && compMessages["compId"] != null) {
+        AdfMessageUtils.messageGroupFocus(messageId);
+      }
+    }
+  }
+  if (!AdfMessageUtils.hasMessages(page, globalMessageCount, globalOnly)) {
+    AdfDomUtils.removeAllNodes(root);
+    AdfMessageUtils.HideMessagesDialog();
+  } else {
+    AdfDomUtils.removeAllNodes(root);
+    var laf = page.getLookAndFeel();
+    var agent = AdfAgent.AGENT;
+    var domDocument = agent.getDomDocument();
+    var table = domDocument.createElement("table");
+    table.summary = "";
+    table.role = "presentation";
+    AdfDomUtils.addCSSClassName(table, laf.getStyleClass(AdfDhtmlMessagesPeer._HEADER_STYLE_CLASS));
+    var row = table.insertRow(-1);
+    var cell = row.insertCell(-1);
+    if (maxType == null) {
+      maxType = 0;
+    }
+    if (globalOnly) {
+      maxType = globalMessages["maxType"];
+    } else {
+      for (var clientId2 in allMessages) {
+        var tempMaxType = allMessages[clientId2]["maxType"];
+        if (tempMaxType > maxType) {
+          maxType = tempMaxType;
+        }
+      }
+    }
+    AdfDomUtils.addCSSClassName(cell, laf.getStyleClass(AdfDhtmlMessagesPeer._HEADER_ICON_STYLE_CLASS));
+    var icon;
+    var styleClass = component.getStyleClass();
+    if (styleClass != null) {
+      icon = AdfMessageUtils.getIconWithPrefix(maxType, "." + styleClass + " ", true);
+      if (icon == null) {
+        AdfLogger.LOGGER.warning("Icon not found with style class " + styleClass + ".  Make sure that skin contains class prefixed the message styleCalss: ." + styleClass);
+      }
+    }
+    if (!icon) {
+      icon = AdfMessageUtils.getIcon(maxType, true);
+    }
+    cell.appendChild(icon);
+    cell = row.insertCell(-1);
+    AdfDomUtils.addCSSClassName(cell, laf.getStyleClass(AdfDhtmlMessagesPeer._HEADER_TEXT_STYLE_CLASS));
+    var text = component.getText();
+    if (text == null) {
+      agent.setTextContent(cell, AdfMessageUtils.getString(maxType, true));
+    } else {
+      agent.setTextContent(cell, text);
+    }
+    root.appendChild(table);
+    var message = component.getMessage();
+    var wrapper = AdfMessageUtils.getCombinedMessagesDom(clientId, message, globalOnly);
+    AdfDomUtils.addCSSClassName(wrapper, laf.getStyleClass(AdfDhtmlMessagesPeer._MESSAGES_BODY_CLASS));
+    root.appendChild(wrapper);
+    root.style.display = "";
+  }
+  page.__queueDescendantResizeNotifySource(component);
+  page.__doDescendantResizeNotify();
+};

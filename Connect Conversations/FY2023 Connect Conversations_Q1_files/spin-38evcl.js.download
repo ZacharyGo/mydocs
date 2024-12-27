@@ -1,0 +1,408 @@
+AdfUIComponents.createComponentClass("AdfRichInputNumberSpinbox", {"componentType":"oracle.adf.RichInputNumberSpinbox", "propertyKeys":[{"name":"changed", "type":"Boolean", "default":false}, {"name":"changedDesc", "type":"String"}, {"name":"autoSubmit", "type":"Boolean", "default":false}, {"name":"accessKey", "type":"String"}, {"name":"contentStyle", "type":"String"}, {"name":"helpTopicId", "type":"String"}, {"name":"disabled", "type":"Boolean", "default":false, "secured":true}, {"name":"label", 
+"type":"String"}, {"name":"readOnly", "type":"Boolean", "default":false, "secured":true}, {"name":"showRequired", "type":"Boolean", "default":false}, {"name":"simple", "type":"Boolean", "default":false}, {"name":"inlineStyle", "type":"String"}, {"name":"styleClass", "type":"String"}, {"name":"shortDesc", "type":"String"}, {"name":"unsecure", "type":"Object", "secured":true}, {"name":"visible", "type":"Boolean", "default":true}, {"name":"editable", "type":"String", "default":"inherit"}, {"name":"placeholder", 
+"type":"String"}, {"name":"columns", "type":"Number"}, {"name":"maximum", "type":"Object", "secured":true}, {"name":"minimum", "type":"Object", "secured":true}, {"name":"stepSize", "type":"Object", "default":1, "secured":true}], "superclass":AdfUIInput});
+
+AdfRichInputNumberSpinbox.InitSubclass = function() {
+  AdfUIComponent.SetPropertyType(AdfRichInputNumberSpinbox, "value", "Number");
+};
+
+AdfRichUIPeer.createPeerClass(AdfDhtmlInputBasePeer, "AdfDhtmlInputNumberSpinboxBasePeer");
+AdfDhtmlInputNumberSpinboxBasePeer.InitSubclass = function() {
+  AdfRichUIPeer.addComponentPropertyGetters(this, AdfRichInputNumberSpinbox.LABEL);
+  AdfRichUIPeer.addComponentPropertyChanges(this, AdfRichInputNumberSpinbox.LABEL);
+  this._LEAD_ZERO = "_adfLeadingZero";
+};
+AdfDhtmlInputNumberSpinboxBasePeer.prototype.getLeadingZero = function() {
+  return this.getDomElement().getAttribute(AdfDhtmlInputNumberSpinboxBasePeer._LEAD_ZERO);
+};
+AdfDhtmlInputNumberSpinboxBasePeer.prototype.SetDisplayValue = function(component, domElement, newValue) {
+  AdfAssert.assertString(newValue);
+  var lead = this.getLeadingZero();
+  if (lead) {
+    var tmp = parseFloat(newValue);
+    if (!isNaN(tmp) && tmp < 10) {
+      newValue = "0" + "" + tmp;
+    }
+  }
+  var domNode = AdfDhtmlEditableValuePeer.GetContentNode(component);
+  var domNodeTagName = domNode.tagName;
+  var isInput = domNodeTagName == "INPUT";
+  if (isInput) {
+    domNode.value = newValue;
+    if (!AdfPage.PAGE.isScreenReaderMode()) {
+      domNode.title = newValue;
+    }
+  } else {
+    AdfAgent.AGENT.setTextContent(domNode, newValue);
+  }
+};
+AdfDhtmlInputNumberSpinboxBasePeer.prototype.LazyInitialize = function(component, domElement) {
+  AdfDhtmlInputNumberSpinboxBasePeer.superclass.LazyInitialize.call(this, component, domElement);
+  this._createClientSideValidator(component, domElement);
+};
+AdfDhtmlInputNumberSpinboxBasePeer.prototype.ShouldShowHint = function(component, domElement) {
+  return false;
+};
+AdfDhtmlInputNumberSpinboxBasePeer.prototype.GetValidatorHints = function(component) {
+  return null;
+};
+AdfDhtmlInputNumberSpinboxBasePeer.prototype._createClientSideValidator = function(component, domElement) {
+  AdfAssert.assertDomElement(domElement);
+  var min = component.getMinimum();
+  var max = component.getMaximum();
+  var page = AdfPage.PAGE;
+  if (page.getDomWindow()["TrRangeValidator"] !== undefined) {
+    var rangeValidator = new TrRangeValidator(max, min, null);
+    component.addValidator(rangeValidator);
+  }
+};
+
+AdfRichUIPeer.createPeerClass(AdfDhtmlInputNumberSpinboxBasePeer, "AdfDhtmlInputNumberSpinboxPeer");
+AdfDhtmlInputNumberSpinboxPeer.InitSubclass = function() {
+  AdfObject.ensureClassInitialization(AdfRichInputNumberSpinbox);
+  AdfRichUIPeer.addComponentEventHandlers(this, AdfUIInputEvent.CLICK_EVENT_TYPE, AdfUIInputEvent.BLUR_EVENT_TYPE, AdfUIInputEvent.MOUSE_OUT_EVENT_TYPE, AdfUIInputEvent.MOUSE_UP_EVENT_TYPE, AdfUIInputEvent.MOUSE_DOWN_EVENT_TYPE, AdfUIInputEvent.KEY_DOWN_EVENT_TYPE);
+  AdfRichUIPeer.addComponentPropertyChanges(this, AdfRichInputNumberSpinbox.DISABLED);
+  this._currentSpinMode = null;
+  this._timerId = null;
+  this._INC = "increment";
+  this._DEC = "decrement";
+  this._INC_ID = "_adfInc";
+  this._DEC_ID = "_adfDec";
+};
+AdfDhtmlInputNumberSpinboxPeer.prototype.GetStepSize = function(component) {
+  return component.getStepSize();
+};
+AdfDhtmlInputNumberSpinboxPeer.prototype.InitDomElement = function(component, domElement) {
+  AdfDhtmlInputNumberSpinboxPeer.superclass.InitDomElement.call(this, component, domElement);
+  var domNode = AdfDhtmlEditableValuePeer.GetContentNode(component, domElement);
+  var clientId = component.getClientId();
+  var incId = AdfRichUIPeer.CreateSubId(clientId, AdfDhtmlInputNumberSpinboxPeer._INC);
+  var decId = AdfRichUIPeer.CreateSubId(clientId, AdfDhtmlInputNumberSpinboxPeer._DEC);
+  domElement.setAttribute(AdfDhtmlInputNumberSpinboxPeer._INC_ID, incId);
+  domElement.setAttribute(AdfDhtmlInputNumberSpinboxPeer._DEC_ID, decId);
+  if (!component.getReadOnly() && !component.getDisabled()) {
+    var value = AdfUIUtils.trim(domNode.value);
+    if (value != "") {
+      var converter = component.getConverter();
+      if (converter) {
+        try {
+          var convertedValue = converter.getAsObject(value, null);
+          if (convertedValue === undefined) {
+            convertedValue = value;
+          }
+          value = parseFloat(convertedValue);
+        } catch (e) {
+        }
+      } else {
+        value = parseFloat(value);
+      }
+      var min = this._getMin(component);
+      var max = this._getMax(component);
+      this._updateButtons(domElement, value >= max, value <= min);
+    }
+  }
+};
+AdfDhtmlInputNumberSpinboxPeer.prototype.HandleComponentMouseOut = function(componentEvent) {
+  if (this.getComponent().getDisabled()) {
+    return;
+  }
+  var target = this._getAnchor(AdfAgent.AGENT.getEventTarget(componentEvent.getNativeEvent()));
+  if (this._isActionButton(target)) {
+    self.clearInterval(this._timerId);
+  }
+};
+AdfDhtmlInputNumberSpinboxPeer.prototype.HandleComponentMouseDown = function(componentEvent) {
+  if (this.getComponent().getDisabled()) {
+    return;
+  }
+  var target = this._getAnchor(AdfAgent.AGENT.getEventTarget(componentEvent.getNativeEvent()));
+  var increment = this._isActionButton(target);
+  if (increment) {
+    var domElement = this.getDomElement();
+    this._currentSpinMode = increment;
+    var stashInterval = self.setInterval(this.createCallback(this._initRepeat), 1E3);
+    this._timerId = stashInterval;
+  }
+};
+AdfDhtmlInputNumberSpinboxPeer.prototype.HandleComponentClick = function(componentEvent) {
+  var component = this.getComponent();
+  if (component.getDisabled()) {
+    return;
+  }
+  AdfDhtmlInputNumberSpinboxPeer.superclass.HandleComponentClick.call(this, componentEvent);
+  var target = this._getAnchor(AdfAgent.AGENT.getEventTarget(componentEvent.getNativeEvent()));
+  var increment = this._isActionButton(target);
+  if (increment) {
+    if (increment == "inc") {
+      this._manipulateValue(true);
+    } else {
+      if (increment == "dec") {
+        this._manipulateValue(false);
+      }
+    }
+    var contentNode = AdfDhtmlEditableValuePeer.GetContentNode(component);
+    this.RunValidation(component, contentNode);
+  }
+};
+AdfDhtmlInputNumberSpinboxPeer.prototype.HandleComponentBlur = function(componentEvent) {
+  AdfDhtmlInputNumberSpinboxPeer.superclass.HandleComponentBlur.call(this, componentEvent);
+  var component = this.getComponent();
+  var value = this._getSpinboxValue(component);
+  if (isNaN(value)) {
+    this._updateButtons(null, true, true);
+  } else {
+    if (value == null) {
+      this._updateButtons(null, false, false);
+    } else {
+      var max = this._getMax(component);
+      var min = this._getMin(component);
+      this._updateButtons(null, value >= max, value <= min);
+    }
+  }
+};
+AdfDhtmlInputNumberSpinboxPeer.prototype.HandleComponentMouseUp = function(componentEvent) {
+  if (this.getComponent().getDisabled()) {
+    return;
+  }
+  var target = this._getAnchor(AdfAgent.AGENT.getEventTarget(componentEvent.getNativeEvent()));
+  if (this._isActionButton(target)) {
+    self.clearInterval(this._timerId);
+  }
+};
+AdfDhtmlInputNumberSpinboxPeer.prototype.HandleComponentKeyDown = function(componentEvent) {
+  var keyCode = AdfAgent.AGENT.getKeyCode(componentEvent.getNativeEvent());
+  var component = this.getComponent();
+  switch(keyCode) {
+    case AdfKeyStroke.ENTER_KEY:
+      this.RunValidation(component, componentEvent.getNativeEventTarget());
+      break;
+    case AdfKeyStroke.ARROWUP_KEY:
+      this._manipulateValue(true);
+      this.RunValidation(component, componentEvent.getNativeEventTarget());
+      break;
+    case AdfKeyStroke.ARROWDOWN_KEY:
+      this._manipulateValue(false);
+      this.RunValidation(component, componentEvent.getNativeEventTarget());
+      break;
+  }
+};
+AdfDhtmlInputNumberSpinboxPeer.prototype.GetInlineEditor = function(event) {
+  return AdfDhtmlSimpleLabelEditor.getInlineEditor();
+};
+AdfDhtmlInputNumberSpinboxPeer.prototype.ComponentDisabledChanged = function(component, domElement, newValue, oldValue) {
+  var domNode = AdfDhtmlEditableValuePeer.GetContentNode(component, domElement);
+  if (newValue == true) {
+    AdfDomUtils.addCSSClassName(domElement, AdfRichUIPeer.DISABLED_STYLECLASS);
+    domNode.setAttribute("disabled", "true");
+    this._updateButtons(null, true, true);
+  } else {
+    AdfDomUtils.removeCSSClassName(domElement, AdfRichUIPeer.DISABLED_STYLECLASS);
+    this._updateButtons(null, false, false);
+    domNode.removeAttribute("disabled");
+  }
+};
+AdfDhtmlInputNumberSpinboxPeer.prototype._initRepeat = function() {
+  this.focus(this.getComponent());
+  self.clearInterval(this._timerId);
+  var stashInterval = self.setInterval(this.createCallback(this._repeatSpinbox), 100);
+  this._timerId = stashInterval;
+};
+AdfDhtmlInputNumberSpinboxPeer.prototype._repeatSpinbox = function() {
+  if (this._currentSpinMode == "inc") {
+    this._manipulateValue(true);
+  } else {
+    if (this._currentSpinMode == "dec") {
+      this._manipulateValue(false);
+    }
+  }
+};
+AdfDhtmlInputNumberSpinboxPeer.prototype._handleButtonClicks = function(component, value, increase) {
+  AdfAssert.assertBoolean(increase);
+  var min = this._getMin(component);
+  var max = this._getMax(component);
+  var stepSize = this.GetStepSize(component);
+  var valMax = max - stepSize;
+  var valMin = min + stepSize;
+  var newValue = null;
+  if (increase == true) {
+    if (value == null) {
+      if (component.getMinimum() != null) {
+        if (component.getMaximum() != null) {
+          newValue = max;
+        } else {
+          newValue = valMin;
+        }
+      } else {
+        if (component.getMaximum() != null) {
+          newValue = max;
+        } else {
+          newValue = 0;
+        }
+      }
+    } else {
+      if (value > valMax) {
+        newValue = max;
+      } else {
+        newValue = value + stepSize;
+        if (newValue < min) {
+          newValue = min;
+        }
+      }
+    }
+  } else {
+    if (value == null) {
+      if (component.getMinimum() != null) {
+        newValue = min;
+      } else {
+        if (component.getMaximum() != null) {
+          newValue = valMax;
+        } else {
+          newValue = 0;
+        }
+      }
+    } else {
+      if (value < valMin) {
+        newValue = min;
+      } else {
+        newValue = value - stepSize;
+        if (newValue > max) {
+          newValue = max;
+        }
+      }
+    }
+  }
+  var converter = component.getConverter();
+  if (converter instanceof AdfMissingConverter) {
+    converter = null;
+  }
+  if (converter && newValue != null) {
+    try {
+      var convertedValue = converter.getAsObject(converter.getAsString(newValue, null), null);
+      if (convertedValue != null) {
+        newValue = convertedValue;
+      }
+    } catch (e) {
+    }
+  }
+  return newValue;
+};
+AdfDhtmlInputNumberSpinboxPeer.prototype._isActionButton = function(element) {
+  if (element) {
+    var domElement = this.getDomElement();
+    var incId = domElement.getAttribute(AdfDhtmlInputNumberSpinboxPeer._INC_ID);
+    var decId = domElement.getAttribute(AdfDhtmlInputNumberSpinboxPeer._DEC_ID);
+    if (element.id == incId) {
+      return "inc";
+    } else {
+      if (element.id == decId) {
+        return "dec";
+      } else {
+        return null;
+      }
+    }
+  } else {
+    return null;
+  }
+};
+AdfDhtmlInputNumberSpinboxPeer.prototype._manipulateValue = function(incrementor) {
+  AdfAssert.assertBoolean(incrementor);
+  var component = this.getComponent();
+  var spinboxValue = this._getSpinboxValue(component);
+  if (!isNaN(spinboxValue)) {
+    var newValue = this._handleButtonClicks(component, spinboxValue, incrementor);
+    this._setVisibleValue(component, newValue);
+  }
+};
+AdfDhtmlInputNumberSpinboxPeer.prototype._getSpinboxValue = function(component) {
+  var visibleValue = AdfUIUtils.trim(AdfDhtmlEditableValuePeer.GetContentNode(component).value);
+  if (visibleValue == "") {
+    return null;
+  }
+  var converter = component.getConverter();
+  if (converter) {
+    try {
+      var convertedValue = converter.getAsObject(visibleValue, null);
+      if (convertedValue === undefined) {
+        convertedValue = parseFloat(visibleValue);
+        if (isNaN(convertedValue)) {
+          AdfLogger.LOGGER.warning("inputNumberSpinbox: The value '", visibleValue, "' could not be converted to a number.");
+        }
+      }
+      visibleValue = convertedValue;
+    } catch (e) {
+      this.Validate(component, visibleValue);
+      visibleValue = NaN;
+    }
+  }
+  return visibleValue;
+};
+AdfDhtmlInputNumberSpinboxPeer.prototype._setVisibleValue = function(component, newValue) {
+  var converter = component.getConverter();
+  if (converter instanceof AdfMissingConverter) {
+    converter = null;
+  }
+  var convertedValue;
+  if (converter && newValue != null) {
+    convertedValue = converter.getAsString(newValue, null);
+    if (convertedValue == null) {
+      AdfLogger.LOGGER.warning("inputNumberSpinbox: The new value '", newValue, "' could not be converted for display.");
+      return;
+    }
+  }
+  var max = this._getMax(component);
+  var min = this._getMin(component);
+  this._updateButtons(null, newValue >= max, newValue <= min);
+  if (convertedValue != null) {
+    newValue = convertedValue;
+  }
+  if (newValue == null) {
+    newValue = "";
+  }
+  var domElement = this.getDomElement();
+  this.SetDisplayValue(component, domElement, newValue.toString());
+};
+AdfDhtmlInputNumberSpinboxPeer.prototype._getMin = function(component) {
+  var min = component.getMinimum();
+  if (min == null) {
+    min = -Number.MAX_VALUE;
+  }
+  return min;
+};
+AdfDhtmlInputNumberSpinboxPeer.prototype._getMax = function(component) {
+  var max = component.getMaximum();
+  if (max == null) {
+    max = Number.MAX_VALUE;
+  }
+  return max;
+};
+AdfDhtmlInputNumberSpinboxPeer.prototype._getAnchor = function(node) {
+  var agent = AdfAgent.AGENT;
+  while (node) {
+    if (agent.getNodeName(node) == "INPUT" || agent.getNodeName(node) == "LABEL") {
+      return null;
+    } else {
+      if (agent.getNodeName(node) == "A") {
+        return node;
+      }
+    }
+    node = node.parentNode;
+  }
+};
+AdfDhtmlInputNumberSpinboxPeer.prototype._updateButtons = function(domElement, atMax, atMin) {
+  AdfAssert.assertDomElementOrNull(domElement);
+  AdfAssert.assertBoolean(atMax);
+  AdfAssert.assertBoolean(atMin);
+  var agent = AdfAgent.AGENT;
+  var domNode;
+  if (domElement) {
+    domNode = domElement;
+  } else {
+    domNode = this.getDomElement();
+  }
+  var incElement = agent.getElementById(domNode.getAttribute(AdfDhtmlInputNumberSpinboxPeer._INC_ID));
+  var decElement = agent.getElementById(domNode.getAttribute(AdfDhtmlInputNumberSpinboxPeer._DEC_ID));
+  AdfDomUtils.addOrRemoveCSSClassName(atMin, decElement, AdfRichUIPeer.DISABLED_STYLECLASS);
+  AdfDomUtils.addOrRemoveCSSClassName(atMax, incElement, AdfRichUIPeer.DISABLED_STYLECLASS);
+  AdfDomUtils.addOrRemoveCSSClassName(atMin, decElement.parentNode, AdfRichUIPeer.DISABLED_STYLECLASS);
+  AdfDomUtils.addOrRemoveCSSClassName(atMax, incElement.parentNode, AdfRichUIPeer.DISABLED_STYLECLASS);
+};

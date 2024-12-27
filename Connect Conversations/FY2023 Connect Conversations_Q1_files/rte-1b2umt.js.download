@@ -1,0 +1,1781 @@
+function AdfEditingAgent() {
+  this.Init();
+}
+AdfObject.createSubclass(AdfEditingAgent);
+AdfEditingAgent.getInstance = function() {
+  if (AdfEditingAgent._instance == undefined) {
+    if (AdfPage.PAGE.isAttachmentMode()) {
+      AdfEditingAgent._instance = new AdfGeckoEditingAgent;
+    } else {
+      var platform = AdfAgent.AGENT.getPlatform();
+      switch(platform) {
+        case AdfAgent.GECKO_PLATFORM:
+          AdfEditingAgent._instance = new AdfGeckoEditingAgent;
+          break;
+        case AdfAgent.IE_PLATFORM:
+          if (AdfAgent.AGENT.getVersion() >= 11) {
+            AdfEditingAgent._instance = new AdfIE11EditingAgent;
+          } else {
+            AdfEditingAgent._instance = new AdfIEEditingAgent;
+          }
+          break;
+        case AdfAgent.WEBKIT_PLATFORM:
+          AdfEditingAgent._instance = new AdfSafariEditingAgent;
+          break;
+        case AdfAgent.EDGE_PLATFORM:
+          AdfEditingAgent._instance = new AdfEdgeEditingAgent;
+          break;
+        default:
+          AdfLogger.LOGGER.warning("Rich Text Editing is not officially supported on this platform");
+          AdfEditingAgent._instance = new AdfEditingAgent;
+          break;
+      }
+    }
+  }
+  return AdfEditingAgent._instance;
+};
+AdfEditingAgent.prototype.toBrowserSpecificCommand = function(command) {
+  return command;
+};
+AdfEditingAgent.prototype.getContentWindow = function(inlineFrame) {
+  AdfAssert.assertDomElement(inlineFrame, "IFRAME");
+  AdfAssert.assert(inlineFrame.contentWindow, "Unexpected null contentWindow.");
+  return inlineFrame.contentWindow;
+};
+AdfEditingAgent.prototype.getColor = function(value) {
+  var converter = new TrColorConverter(["'rgb'(r, g, b)", "'rgb'(r,g,b)"], false);
+  try {
+    value = converter.getAsObject(value);
+  } catch (e) {
+    value = null;
+  }
+  return value;
+};
+AdfEditingAgent.prototype.getInlineFrameDocument = function(inlineFrame) {
+  AdfAssert.assertDomElement(inlineFrame, "IFRAME");
+  var contentWindow = this.getContentWindow(inlineFrame);
+  AdfAssert.assert(contentWindow, "Unexpected null contentWindow.");
+  AdfAssert.assert(contentWindow.document, "Unexpected null contentWindow document.");
+  return contentWindow.document;
+};
+AdfEditingAgent.prototype.execCommand = function(component, inlineFrame, command, value) {
+  var doc;
+  if (command != "insert") {
+    AdfAssert.assertDomElement(inlineFrame, "IFRAME");
+    doc = AdfEditingAgent.getInstance().getInlineFrameDocument(inlineFrame);
+  }
+  if (value == null) {
+    switch(command) {
+      case "createlink":
+        var laf = AdfPage.PAGE.getLookAndFeel();
+        var label = laf.getTranslatedString("af_richTextEditor.LABEL_SPECIFY_THE_URL");
+        var currentLinkURL = this._getLinkURLForSelection(component, inlineFrame);
+        value = prompt(label, currentLinkURL);
+        if (value == null || value == "") {
+          return;
+        }
+        break;
+    }
+  }
+  switch(command) {
+    case "insert":
+      var htmlFragment = value;
+      if (htmlFragment == null) {
+        htmlFragment = "";
+      }
+      this.insertHtmlAtSelection(inlineFrame, htmlFragment);
+      break;
+    case "moderichtext":
+      component.getPeer().setCodeEditingMode(false);
+      break;
+    case "modecode":
+      component.getPeer().setCodeEditingMode(true);
+      break;
+    case "undo":
+      this.ExecuteUndo(component, inlineFrame, doc);
+      break;
+    case "redo":
+      this.ExecuteRedo(component, inlineFrame, doc);
+      break;
+    case "createlink":
+      this.CreateLink(component, doc, value);
+      break;
+    default:
+      this._executeCommand(component, doc, command, value);
+  }
+};
+AdfEditingAgent.prototype.isEmptySelection = function(inlineFrame) {
+  AdfAssert.assertDomElement(inlineFrame, "IFRAME");
+  doc = AdfEditingAgent.getInstance().getInlineFrameDocument(inlineFrame);
+  if (doc.getSelection && doc.getSelection() == "") {
+    return true;
+  } else {
+    return false;
+  }
+};
+AdfEditingAgent.prototype.queryCommandEnabled = function(component, inlineFrame, command) {
+  AdfAssert.assertString(command);
+  var result = false;
+  switch(command) {
+    case "insert":
+    ;
+    case "moderichtext":
+    ;
+    case "modecode":
+      result = true;
+      break;
+    case "undo":
+      result = this.QueryUndoEnabled(component, inlineFrame);
+      break;
+    case "redo":
+      result = this.QueryRedoEnabled(component, inlineFrame);
+      break;
+    default:
+      result = this._queryCommandEnabled(component, inlineFrame, command);
+  }
+  return result;
+};
+AdfEditingAgent.prototype.setInlineFrameContentEditable = function(inlineFrame) {
+  AdfAssert.assertDomElement(inlineFrame, "IFRAME");
+  var doc = this.getInlineFrameDocument(inlineFrame);
+  if (this.useContentEditable()) {
+    this._setContentEditable(doc.body);
+  } else {
+    doc.designMode = "on";
+  }
+  return true;
+};
+AdfEditingAgent.prototype._setContentEditable = function(element) {
+  element.contentEditable = true;
+};
+AdfEditingAgent.prototype.useContentEditable = function() {
+  return true;
+};
+AdfEditingAgent.prototype.isDesignMode = function(inlineFrame) {
+  var doc = this.getInlineFrameDocument(inlineFrame);
+  if (this.useContentEditable()) {
+    var body = doc.body;
+    return body.contentEditable == "true";
+  }
+  var mode = doc.designMode;
+  if (mode) {
+    mode = mode.toLowerCase();
+  }
+  return mode == "on";
+};
+AdfEditingAgent.prototype.isDesignModeReloadingFrame = function() {
+  return false;
+};
+AdfEditingAgent.prototype.queryCommandValue = function(inlineFrame, commandIdentifier) {
+  commandIdentifier = this.toBrowserSpecificCommand(commandIdentifier);
+  var result = false;
+  try {
+    result = this.getInlineFrameDocument(inlineFrame).queryCommandValue(commandIdentifier);
+  } catch (e) {
+    AdfLogger.LOGGER.severe("queryCommandValue: command not supported (", commandIdentifier, ").", e);
+  }
+  return result;
+};
+AdfEditingAgent.prototype.queryCommandState = function(inlineFrame, commandIdentifier) {
+  AdfAssert.assertString(commandIdentifier);
+  if (commandIdentifier == "indent" || commandIdentifier == "outdent") {
+    return;
+  }
+  if (commandIdentifier == "forecolor" || commandIdentifier == "backcolor" || commandIdentifier == "fontsize" || commandIdentifier == "fontname") {
+    return this.queryCommandValue(inlineFrame, commandIdentifier);
+  }
+  var result = false;
+  commandIdentifier = this.toBrowserSpecificCommand(commandIdentifier);
+  try {
+    result = this.getInlineFrameDocument(inlineFrame).queryCommandState(commandIdentifier);
+  } catch (e) {
+    AdfLogger.LOGGER.severe("queryCommandState: command not supported (", commandIdentifier, ").", e);
+  }
+  return result;
+};
+AdfEditingAgent.prototype.setRTL = function(doc) {
+  AdfAssert.assert(doc);
+  var bodyNode = doc.body;
+  AdfAssert.assertDomElement(bodyNode, "BODY");
+  bodyNode.setAttribute("dir", AdfPage.PAGE.getLocaleContext().isRightToLeft() ? "rtl" : "ltr");
+};
+AdfEditingAgent.prototype.queryCommandIndeterminate = function(inlineFrame, commandIdentifier) {
+  commandIdentifier = this.toBrowserSpecificCommand(commandIdentifier);
+  var result = false;
+  try {
+    result = this.getInlineFrameDocument(inlineFrame).queryCommandIndeterm(commandIdentifier);
+  } catch (e) {
+    AdfLogger.LOGGER.severe("queryCommandIndeterminate: command not supported (", commandIdentifier, ").", e);
+  }
+  return result;
+};
+AdfEditingAgent.prototype.getFocusBlurElement = function(inlineFrame) {
+  return inlineFrame;
+};
+AdfEditingAgent.prototype.getSelectionRange = function(inlineFrame) {
+  return this.getInlineFrameDocument(inlineFrame).selection.createRange();
+};
+AdfEditingAgent.prototype.getInlineFrameContent = function(inlineFrame, keepOriginal) {
+  return this.getInlineFrameDocument(inlineFrame).body.innerHTML;
+};
+AdfEditingAgent.prototype.setInlineFrameContent = function(inlineFrame, newContent) {
+  this.getInlineFrameDocument(inlineFrame).body.innerHTML = newContent;
+};
+AdfEditingAgent.prototype.getDefaultContent = function() {
+  return "";
+};
+AdfEditingAgent.prototype.setSelectionRange = function(inlineFrame, range) {
+  range.select();
+};
+AdfEditingAgent.prototype.insertHtmlAtSelection = function(inlineFrame, htmlFragment) {
+  if (inlineFrame.nodeName == "TEXTAREA" || inlineFrame.nodeName == "INPUT") {
+    var newStart = inlineFrame.selectionStart + htmlFragment.length;
+    inlineFrame.value = inlineFrame.value.substr(0, inlineFrame.selectionStart) + htmlFragment + inlineFrame.value.substr(inlineFrame.selectionEnd);
+    inlineFrame.selectionStart = newStart;
+    inlineFrame.selectionEnd = newStart;
+  } else {
+    var selectionRange = this.getSelectionRange(inlineFrame);
+    if (selectionRange == null) {
+      AdfLogger.LOGGER.severe("Unexpected null selection for insert command.");
+    } else {
+      if (selectionRange.toString().length > 0) {
+        selectionRange.deleteContents();
+      }
+      var clonedRange = selectionRange.cloneRange();
+      var div = document.createElement("div");
+      div.innerHTML = htmlFragment;
+      var nodes = div.childNodes;
+      var nodeCount = nodes.length;
+      var lastNode = null;
+      for (var i = nodeCount - 1;i >= 0;i--) {
+        var newNode = nodes[i];
+        if (lastNode == null) {
+          lastNode = newNode;
+        }
+        selectionRange.insertNode(newNode);
+      }
+      if (lastNode != null) {
+        selectionRange.selectNode(lastNode);
+        selectionRange.setStartAfter(lastNode);
+      }
+    }
+  }
+};
+AdfEditingAgent.prototype.handleTab = function(inlineFrame, keyDownEvt) {
+};
+AdfEditingAgent.prototype.updateValueHistory = function(component, inlineFrame, newValue) {
+};
+AdfEditingAgent.prototype.ExecuteUndo = function(component, inlineFrame, doc) {
+  this._executeCommand(component, doc, "undo", null);
+};
+AdfEditingAgent.prototype.ExecuteRedo = function(component, inlineFrame, doc) {
+  this._executeCommand(component, doc, "redo", null);
+};
+AdfEditingAgent.prototype.CreateLink = function(component, doc, value) {
+  this._executeCommand(component, doc, "createlink", value);
+};
+AdfEditingAgent.prototype.QueryUndoEnabled = function(component, inlineFrame) {
+  return this._queryCommandEnabled(component, inlineFrame, "undo");
+};
+AdfEditingAgent.prototype.QueryRedoEnabled = function(component, inlineFrame) {
+  return this._queryCommandEnabled(component, inlineFrame, "redo");
+};
+AdfEditingAgent.prototype.IsNodeWrappingRange = function(range, node) {
+  var nodeRange = node.ownerDocument.createRange();
+  try {
+    nodeRange.selectNode(node);
+  } catch (e) {
+    AdfLogger.LOGGER.logErrorAsInfo(e, "Unable to select node in range");
+    return false;
+  }
+  var isNodeStartSameOrBeforeRange = range.compareBoundaryPoints(Range.START_TO_START, nodeRange) != -1;
+  var isNodeEndSameOrAfterRange = range.compareBoundaryPoints(Range.END_TO_END, nodeRange) != 1;
+  return isNodeStartSameOrBeforeRange && isNodeEndSameOrAfterRange;
+};
+AdfEditingAgent.prototype._executeCommand = function(component, doc, command, value) {
+  var browserSpecificCommand = this.toBrowserSpecificCommand(command);
+  try {
+    doc.execCommand(browserSpecificCommand, null, value);
+  } catch (e) {
+    AdfLogger.LOGGER.severe("execCommand[", command, ",", value, "] failed with the following exception: ", e);
+  }
+};
+AdfEditingAgent.prototype._queryCommandEnabled = function(component, inlineFrame, command) {
+  var result = false;
+  var doc = this.getInlineFrameDocument(inlineFrame);
+  command = this.toBrowserSpecificCommand(command);
+  try {
+    result = doc.queryCommandEnabled(command);
+  } catch (e) {
+    AdfLogger.LOGGER.severe("queryCommandEnabled failed with the following exception: [", command, "]: ", e);
+  }
+  return result;
+};
+AdfEditingAgent.prototype._getLinkURLForSelection = function(component, inlineFrame) {
+  AdfAssert.assertDomElement(inlineFrame, "IFRAME");
+  var document = this.getInlineFrameDocument(inlineFrame);
+  var links = document.getElementsByTagName("a");
+  var selectionRange = component.getPeer().getSelectionRange(component);
+  var linkURLForSelection = "about:blank";
+  for (var i = 0;i < links.length;i++) {
+    if (this.IsNodeWrappingRange(selectionRange, links[i])) {
+      linkURLForSelection = links[i].href;
+      break;
+    }
+  }
+  return linkURLForSelection;
+};
+
+function AdfSafariEditingAgent() {
+  this.Init();
+  var agent = AdfAgent.AGENT;
+  this._isTouch = agent.getCapabilities()[AdfAgent.CAP_TOUCH_SCREEN] != AdfAgent.CAP_TOUCH_SCREEN_NONE;
+}
+AdfObject.createSubclass(AdfSafariEditingAgent, AdfEditingAgent);
+AdfSafariEditingAgent.prototype.getInlineFrameContent = function(inlineFrame, keepOriginal) {
+  if (this._isTouch && AdfAgent.AGENT.getPlatform() == AdfAgent.WEBKIT_PLATFORM) {
+    if (inlineFrame.contentWindow == null) {
+      return "";
+    }
+  }
+  var body = this.getInlineFrameDocument(inlineFrame).body;
+  if (!keepOriginal) {
+    var nodes = body.childNodes;
+    if (nodes) {
+      if (nodes.length == 1) {
+        var node = nodes[0];
+        if (node.nodeName == "BR" && node.innerText == "") {
+          return "";
+        }
+      } else {
+        if (nodes.length == 2) {
+          if (this._isTouch && AdfAgent.AGENT.getPlatform() == AdfAgent.WEBKIT_PLATFORM && nodes[0].innerText == "" && nodes[1].innerText == "") {
+            return "";
+          }
+        }
+      }
+    }
+  }
+  return body.innerHTML;
+};
+AdfSafariEditingAgent.prototype.getDefaultContent = function() {
+  return "\x3cbr\x3e";
+};
+AdfSafariEditingAgent.prototype.insertHtmlAtSelection = function(inlineFrame, htmlFragment) {
+  if (inlineFrame.nodeName == "TEXTAREA" || inlineFrame.nodeName == "INPUT") {
+    var newStart = inlineFrame.selectionStart + htmlFragment.length;
+    inlineFrame.value = inlineFrame.value.substr(0, inlineFrame.selectionStart) + htmlFragment + inlineFrame.value.substr(inlineFrame.selectionEnd);
+    inlineFrame.selectionStart = newStart;
+    inlineFrame.selectionEnd = newStart;
+  } else {
+    var selectionRange = this.getSelectionRange(inlineFrame);
+    if (selectionRange == null) {
+      var inlineFrameDoc = this.getInlineFrameDocument(inlineFrame);
+      var div = inlineFrameDoc.createElement("div");
+      div.innerHTML = htmlFragment;
+      var nodes = div.childNodes;
+      var nodeCount = nodes.length;
+      var inlineFrameBody = inlineFrameDoc.body;
+      for (var i = nodeCount - 1;i >= 0;i--) {
+        var newNode = nodes[i];
+        inlineFrameBody.insertBefore(newNode, inlineFrameBody.firstChild);
+      }
+    } else {
+      if (selectionRange.toString().length > 0) {
+        selectionRange.deleteContents();
+      }
+      var inlineFrameDoc = this.getInlineFrameDocument(inlineFrame);
+      var div = inlineFrameDoc.createElement("div");
+      div.innerHTML = htmlFragment;
+      var nodes = div.childNodes;
+      var nodeCount = nodes.length;
+      var lastNode = null;
+      for (var i = nodeCount - 1;i >= 0;i--) {
+        var newNode = nodes[i];
+        if (lastNode == null) {
+          lastNode = newNode;
+        }
+        selectionRange.insertNode(newNode);
+      }
+      if (lastNode != null) {
+        selectionRange.selectNode(lastNode);
+        selectionRange.setStartAfter(lastNode);
+      }
+    }
+  }
+};
+AdfSafariEditingAgent.prototype.setInlineFrameContentEditable = function(inlineFrame) {
+  if (this.isDesignMode(inlineFrame)) {
+    return false;
+  }
+  var result = AdfSafariEditingAgent.superclass.setInlineFrameContentEditable.call(this, inlineFrame);
+  return result;
+};
+AdfSafariEditingAgent.prototype.getFocusBlurElement = function(inlineFrame) {
+  AdfAssert.assertDomElement(inlineFrame, "IFRAME");
+  var focusBlurElement = this.getInlineFrameDocument(inlineFrame).body;
+  focusBlurElement.tabIndex = 0;
+  return focusBlurElement;
+};
+AdfSafariEditingAgent.prototype.getSelectionRange = function(inlineFrame) {
+  AdfAssert.assertDomElement(inlineFrame, "IFRAME");
+  var selection = this._getWindowSelection(inlineFrame);
+  if (selection && selection.rangeCount > 0) {
+    return selection.getRangeAt(0);
+  }
+};
+AdfSafariEditingAgent.prototype.setSelectionRange = function(inlineFrame, range) {
+  AdfAssert.assertDomElement(inlineFrame, "IFRAME");
+  var selection = this._getWindowSelection(inlineFrame);
+  if (selection) {
+    selection.removeAllRanges();
+    selection.addRange(range);
+  }
+};
+AdfSafariEditingAgent.prototype._getWindowSelection = function(inlineFrame) {
+  AdfAssert.assertDomElement(inlineFrame, "IFRAME");
+  return this.getInlineFrameDocument(inlineFrame).defaultView.getSelection();
+};
+AdfSafariEditingAgent.prototype.handleTab = function(inlineFrame, keyDownEvt) {
+  if (keyDownEvt.shiftKey) {
+    AdfAgent.AGENT.preventDefault(keyDownEvt);
+    AdfFocusUtils.focusPreviousTabStop(inlineFrame);
+  } else {
+    AdfAgent.AGENT.preventDefault(keyDownEvt);
+    AdfFocusUtils.focusNextTabStop(inlineFrame, null, true);
+  }
+};
+AdfSafariEditingAgent.prototype.queryCommandValue = function(inlineFrame, commandIdentifier) {
+  if (!this.isDesignMode(inlineFrame)) {
+    return;
+  }
+  return AdfSafariEditingAgent.superclass.queryCommandValue.call(this, inlineFrame, commandIdentifier);
+};
+AdfSafariEditingAgent.prototype.queryCommandState = function(inlineFrame, commandIdentifier) {
+  if (!this.isDesignMode(inlineFrame)) {
+    return;
+  }
+  return AdfSafariEditingAgent.superclass.queryCommandState.call(this, inlineFrame, commandIdentifier);
+};
+AdfSafariEditingAgent.prototype.queryCommandIndeterminate = function(inlineFrame, commandIdentifier) {
+  if (!this.isDesignMode(inlineFrame)) {
+    return false;
+  }
+  return AdfSafariEditingAgent.superclass.queryCommandIndeterminate.call(this, inlineFrame, commandIdentifier);
+};
+AdfSafariEditingAgent.prototype.queryCommandEnabled = function(component, inlineFrame, command) {
+  if (!this.isDesignMode(inlineFrame)) {
+    return false;
+  }
+  return AdfSafariEditingAgent.superclass.queryCommandEnabled.call(this, component, inlineFrame, command);
+};
+AdfSafariEditingAgent.prototype.updateValueHistory = function(component, inlineFrame, newValue) {
+  var agent = AdfAgent.AGENT;
+  if (this._isTouch && agent.getPlatform() == AdfAgent.WEBKIT_PLATFORM && agent.getVersion() < 536) {
+    if (!this._updateValueHistory) {
+      this._updateValueHistory = new Array;
+    }
+    var itemNum = this._updateValueHistory.length;
+    if (itemNum > 0) {
+      if (this._updateValueHistory[itemNum - 1] == newValue) {
+        return;
+      }
+    }
+    this._updateValueHistory.push(newValue);
+  } else {
+    AdfSafariEditingAgent.superclass.updateValueHistory.call(this, component, inlineFrame, newValue);
+  }
+};
+AdfSafariEditingAgent.prototype.ExecuteUndo = function(component, inlineFrame, doc) {
+  var agent = AdfAgent.AGENT;
+  if (this._isTouch && agent.getPlatform() == AdfAgent.WEBKIT_PLATFORM && agent.getVersion() < 536) {
+    if (!this._redoStack) {
+      this._redoStack = new Array;
+    }
+    if (this._updateValueHistory && this._updateValueHistory.length > 0) {
+      var item = this._updateValueHistory.pop();
+      this._redoStack.push(item);
+      if (this._updateValueHistory.length > 0) {
+        this.setInlineFrameContent(inlineFrame, this._updateValueHistory[this._updateValueHistory.length - 1]);
+      }
+    }
+  } else {
+    AdfSafariEditingAgent.superclass.ExecuteUndo.call(this, component, inlineFrame, doc);
+  }
+};
+AdfSafariEditingAgent.prototype.ExecuteRedo = function(component, inlineFrame, doc) {
+  var agent = AdfAgent.AGENT;
+  if (this._isTouch && agent.getPlatform() == AdfAgent.WEBKIT_PLATFORM && agent.getVersion() < 536) {
+    if (this._redoStack && this._redoStack.length > 0) {
+      this.setInlineFrameContent(inlineFrame, this._redoStack.pop());
+    }
+  } else {
+    AdfSafariEditingAgent.superclass.ExecuteRedo.call(this, component, inlineFrame, doc);
+  }
+};
+AdfSafariEditingAgent.prototype.QueryUndoEnabled = function(component, inlineFrame) {
+  var agent = AdfAgent.AGENT;
+  if (this._isTouch && agent.getPlatform() == AdfAgent.WEBKIT_PLATFORM && agent.getVersion() < 536) {
+    if (this._updateValueHistory && this._updateValueHistory.length > 0) {
+      return true;
+    } else {
+      return false;
+    }
+  } else {
+    return AdfSafariEditingAgent.superclass.QueryUndoEnabled.call(this, component, inlineFrame);
+  }
+};
+AdfSafariEditingAgent.prototype.QueryRedoEnabled = function(component, inlineFrame) {
+  var agent = AdfAgent.AGENT;
+  if (this._isTouch && agent.getPlatform() == AdfAgent.WEBKIT_PLATFORM && agent.getVersion() < 536) {
+    if (this._redoStack && this._redoStack.length > 0) {
+      return true;
+    } else {
+      return false;
+    }
+  } else {
+    return AdfSafariEditingAgent.superclass.QueryRedoEnabled.call(this, component, inlineFrame);
+  }
+};
+
+AdfUIComponents.createComponentClass("AdfRichTextEditor", {"componentType":"oracle.adf.RichTextEditor", "propertyKeys":[{"name":"changed", "type":"Boolean", "default":false}, {"name":"changedDesc", "type":"String"}, {"name":"autoSubmit", "type":"Boolean", "default":false}, {"name":"accessKey", "type":"String"}, {"name":"contentStyle", "type":"String"}, {"name":"helpTopicId", "type":"String"}, {"name":"disabled", "type":"Boolean", "default":false, "secured":true}, {"name":"label", "type":"String"}, 
+{"name":"readOnly", "type":"Boolean", "default":false, "secured":true}, {"name":"showRequired", "type":"Boolean", "default":false}, {"name":"simple", "type":"Boolean", "default":false}, {"name":"inlineStyle", "type":"String"}, {"name":"styleClass", "type":"String"}, {"name":"shortDesc", "type":"String"}, {"name":"unsecure", "type":"Object", "secured":true}, {"name":"visible", "type":"Boolean", "default":true}, {"name":"persist", "type":"Array"}, {"name":"dontPersist", "type":"Array"}, {"name":"layout", 
+"type":"String", "default":"legacy"}, {"name":"extraPlugins", "type":"Array"}, {"name":"columns", "type":"Number"}, {"name":"dimensionsFrom", "type":"String", "default":"content"}, {"name":"editMode", "type":"String"}, {"name":"rows", "type":"Number"}, {"name":"contentDelivery", "type":"String", "default":"immediate"}, {"name":"toolboxLayout", "type":"Array"}], "superclass":AdfUIInput});
+
+AdfRichTextEditor.prototype.GetConvertedValue = function(value) {
+  return undefined;
+};
+AdfRichTextEditor.prototype.getValue = function() {
+  return null;
+};
+AdfRichTextEditor.prototype.setValue = function(value) {
+  return;
+};
+AdfRichTextEditor.prototype.getSubmittedValue = function() {
+  var peer = this.getPeer();
+  return peer.GetSubmittedValue(this, peer.getDomElement());
+};
+
+AdfRichUIPeer.createPeerClass(AdfDhtmlRichTextEditorBasePeer, "AdfDhtmlRichTextEditorPeer", false);
+AdfDhtmlRichTextEditorPeer.InitSubclass = function() {
+  AdfDhtmlRichTextEditorBasePeer.InitSubclass.call(this);
+  AdfRichUIPeer.addComponentEventHandlers(this, AdfActionEvent.ACTION_EVENT_TYPE, AdfUIInputEvent.CLICK_EVENT_TYPE, AdfUIInputEvent.MOUSE_DOWN_EVENT_TYPE, AdfUIInputEvent.MOUSE_UP_EVENT_TYPE, AdfUIInputEvent.KEY_UP_EVENT_TYPE);
+  this.InitConstants();
+};
+AdfDhtmlRichTextEditorPeer.InitConstants = function() {
+  AdfDhtmlRichTextEditorBasePeer.InitConstants.call(this);
+  this._COLOR_REGEX = /rgba?\((\d+),\s*(\d+),\s*(\d+)(,\s*((\d+)))?\)/;
+};
+AdfDhtmlRichTextEditorPeer.HandleTimerUpdate = function(clientId) {
+  var component = AdfPage.PAGE.findComponent(clientId);
+  if (component) {
+    var peer = component.getPeer();
+    peer.UpdateValue();
+    peer._handleContextChangedForCommands();
+  }
+};
+AdfDhtmlRichTextEditorPeer.prototype.Init = function(component) {
+  AdfDhtmlRichTextEditorPeer.superclass.Init.call(this, component);
+};
+AdfDhtmlRichTextEditorPeer.prototype.InitDomElement = function(component, domElement) {
+  var readOnly = component.getReadOnly();
+  var clientId = component.getClientId();
+  var agent = AdfAgent.AGENT;
+  if (!readOnly) {
+    var fieldSubId = AdfRichUIPeer.CreateSubId(clientId, AdfDhtmlRichTextEditorPeer._CONTENT_FIELD_SUB_ID);
+    agent.setExpandoProperty(domElement, AdfDhtmlRichTextEditorPeer._FIELD_ID_ATTR_NAME, fieldSubId);
+    var sourceFieldSubId = AdfRichUIPeer.CreateSubId(clientId, AdfDhtmlRichTextEditorPeer._SOURCE_FIELD_SUB_ID);
+    agent.setExpandoProperty(domElement, AdfDhtmlRichTextEditorPeer._SOURCE_FIELD_ID_ATTR_NAME, sourceFieldSubId);
+    AdfPage.PAGE.registerLoadingComponent(component);
+  }
+  AdfDhtmlRichTextEditorPeer.superclass.InitDomElement.call(this, component, domElement);
+  this._isTouch = agent.isTouchFirstDevice();
+  this._borderPaddingAccumulation = -1;
+  if (!readOnly) {
+    this._modeButtonRichTextClientId = clientId + "_afrModeRichText";
+    this._modeButtonCodeClientId = clientId + "_afrModeCode";
+    this._createIframe(component);
+  } else {
+    var rteContentField = this._getReadOnlyContentField(component);
+    rteContentField.innerHTML = rteContentField.textContent;
+  }
+};
+AdfDhtmlRichTextEditorPeer.prototype.GetReadyState = function() {
+  var component = this.getComponent();
+  var iframeDomElement = this._getContentField(component);
+  if (iframeDomElement && iframeDomElement.getAttribute("data-afr-rte-loaded") === "1") {
+    AdfLogger.LOGGER.fine("AdfDhtmlRichTextEditorPeer.GetReadyState: RTE loaded");
+    try {
+      var innerWindow = iframeDomElement.contentWindow;
+      if (innerWindow.document.readyState === "complete") {
+        AdfLogger.LOGGER.fine("AdfDhtmlRichTextEditorPeer.GetReadyState: RTE ready");
+        return AdfUIComponent.STATE_COMPLETE;
+      } else {
+        AdfLogger.LOGGER.fine("AdfDhtmlRichTextEditorPeer.GetReadyState: RTE inner document not yet ready");
+        return AdfUIComponent.STATE_LOADING;
+      }
+    } catch (e) {
+      AdfLogger.LOGGER.fine("AdfDhtmlRichTextEditor.GetReadyState: exception.", "Nothing more to do");
+      return AdfUIComponent.STATE_COMPLETE;
+    }
+  }
+  AdfLogger.LOGGER.fine("AdfDhtmlRichTextEditorPeer.GetReadyState: richTextEditor's onload has not fired");
+  return AdfUIComponent.STATE_LOADING;
+};
+AdfDhtmlRichTextEditorPeer.prototype.ResizeNotify = function(oldWidth, oldHeight, newWidth, newHeight) {
+  if (!this._isContainerStretched()) {
+    return;
+  }
+  var agent = AdfAgent.AGENT;
+  var component = this.getComponent();
+  var clientId = component.getClientId();
+  var cicNode = agent.getElementById(AdfRichUIPeer.CreateSubId(clientId, AdfDhtmlRichTextEditorPeer._CONTENT_INPUT_CONTAINER_SUBID));
+  var contentNode = agent.getElementById(AdfRichUIPeer.CreateSubId(clientId, "content"));
+  var childNodes = contentNode.childNodes;
+  if (!cicNode) {
+    return;
+  }
+  var height = 0;
+  for (var i = 0, j = childNodes.length;i < j;i++) {
+    if (childNodes[i] === cicNode) {
+      continue;
+    }
+    height += childNodes[i].offsetHeight;
+  }
+  cicNode.style.height = newHeight - height + "px";
+};
+AdfDhtmlRichTextEditorPeer.prototype.focus = function(component) {
+  AdfAssert.assert(component);
+  if (this.isCodeEditingMode()) {
+    var codeField = this._getSourceCodeField(component);
+    codeField.focus();
+  } else {
+    var contentField = this._getContentField(component);
+    var editingAgent = AdfEditingAgent.getInstance();
+    var focusElement = contentField;
+    var agent = AdfAgent.AGENT;
+    var isIE11 = agent.getPlatform() == AdfAgent.IE_PLATFORM && agent.getVersion() == 11;
+    var isEdge = agent.getPlatform() == AdfAgent.EDGE_PLATFORM;
+    var isChrome = agent.getPlatform() == AdfAgent.WEBKIT_PLATFORM;
+    if (isChrome || isEdge) {
+      focusElement = editingAgent.getFocusBlurElement(contentField);
+    }
+    if (isIE11 || isEdge) {
+      if (this._hadFirstFocus && !this._isComponentHavingFocus()) {
+        AdfFocusUtils.focusElement(focusElement);
+      }
+    } else {
+      AdfFocusUtils.focusElement(focusElement);
+    }
+    this.StopDialogsFromBeingInactivatedDueToIframes();
+  }
+};
+AdfDhtmlRichTextEditorPeer.prototype.getSelectionRange = function(component) {
+  var editingAgent = AdfEditingAgent.getInstance();
+  var inlineFrame = this._getContentField(component);
+  return editingAgent.getSelectionRange(inlineFrame);
+};
+AdfDhtmlRichTextEditorPeer.prototype.HandleCodeEditingModeChange = function(component) {
+  var toolboxComponent = this._getToolboxComponent(component);
+  this.visitChildren(toolboxComponent, AdfDhtmlRichTextEditorPeer._toolboxVisitChildrenCallback, this, true);
+  var editingAgent = AdfEditingAgent.getInstance();
+  var richTextField = this._getContentField(component);
+  var codeField = this._getSourceCodeField(component);
+  if (this.isCodeEditingMode()) {
+    var innerHtml = this.getCurrentContent(component);
+    codeField.value = "" + innerHtml;
+    richTextField.blur();
+    this._removeSelection();
+    richTextField.style.display = "none";
+    codeField.style.display = "block";
+    codeField.focus();
+  } else {
+    codeField.blur();
+    codeField.style.display = "none";
+    richTextField.style.display = "block";
+    richTextField.focus();
+    var code = codeField.value;
+    editingAgent.setInlineFrameContent(richTextField, code);
+    this.focus(component);
+    AdfEditingAgent.getInstance().setInlineFrameContentEditable(richTextField);
+    this._ignoreNextContextChanged = true;
+  }
+};
+AdfDhtmlRichTextEditorPeer.prototype.HandleComponentClick = function(componentEvent) {
+  AdfDhtmlRichTextEditorPeer.superclass.HandleComponentClick.call(this, componentEvent);
+  var target = componentEvent.getNativeEventTarget();
+  if (target && target.nodeName == "LABEL") {
+    this.focus(this.getComponent());
+  }
+};
+AdfDhtmlRichTextEditorPeer.prototype.HandleComponentMouseDown = function(componentEvent) {
+  this._handleClonedEvent(componentEvent);
+};
+AdfDhtmlRichTextEditorPeer.prototype.HandleComponentMouseUp = function(componentEvent) {
+  this._handleClonedEvent(componentEvent);
+};
+AdfDhtmlRichTextEditorPeer.prototype.HandleComponentKeyDown = function(componentEvent) {
+  this._handleClonedEvent(componentEvent);
+};
+AdfDhtmlRichTextEditorPeer.prototype.HandleComponentKeyUp = function(componentEvent) {
+  this._handleClonedEvent(componentEvent);
+};
+AdfDhtmlRichTextEditorPeer.prototype.HandleComponentAction = function(componentEvent) {
+  this._styleBindingActionListener(componentEvent);
+  this._commandBindingActionListener(componentEvent);
+};
+AdfDhtmlRichTextEditorPeer.prototype.HandleContextChanged = function() {
+  if (this._ignoreNextContextChanged) {
+    delete this._ignoreNextContextChanged;
+  } else {
+    if (this.isCodeEditingMode() != true) {
+      this._saveSelection();
+      this._handleContextChangedForCommands();
+      this._handleContextChangedForStyles();
+    }
+  }
+};
+AdfDhtmlRichTextEditorPeer.prototype.StopDialogsFromBeingInactivatedDueToIframes = function() {
+  var cancelNeeded = true;
+  var domDocument = AdfAgent.AGENT.getDomDocument();
+  var activeTagName;
+  var activeElement = domDocument.activeElement;
+  if (activeElement) {
+    activeTagName = activeElement.tagName;
+  }
+  if (activeTagName == "IFRAME") {
+    cancelNeeded = false;
+  }
+  if (cancelNeeded) {
+    AdfPage.PAGE.getAutoDismissalManager().cancelBlurTimeout();
+  }
+};
+AdfDhtmlRichTextEditorPeer.prototype.GetSubmittedValue = function(component, domElement) {
+  if (this._isTouch && this.WasSubmitted(component)) {
+    var richTextField = this._getContentField(component);
+    var newValue = this.getCurrentContent(component);
+    var lastValue = AdfAgent.AGENT.getExpandoProperty(richTextField, AdfDhtmlInputBasePeer._LAST_VALUE);
+    if (lastValue != newValue && !(lastValue === undefined)) {
+      this.UpdateValue();
+    }
+  }
+  if (component.getReadOnly()) {
+    var domNode = AdfDhtmlEditableValuePeer.GetContentNode(component, domElement);
+    return domNode.innerHTML;
+  }
+  var domNode = this._getSourceCodeField(component);
+  return domNode.value;
+};
+AdfDhtmlRichTextEditorPeer.prototype.UpdateValue = function() {
+  var component = this.getComponent();
+  var richTextField = this._getContentField(component);
+  if (this._keyTimer) {
+    clearTimeout(this._keyTimer);
+    delete this._keyTimer;
+  }
+  if (richTextField.style.display != "none") {
+    var contentNode = this._getSourceCodeField(component);
+    var editingAgent = AdfEditingAgent.getInstance();
+    var newValue = this.getCurrentContent(component);
+    var iOSKeyboardHackElem = newValue.indexOf(AdfDhtmlRichTextEditorPeer._getDummyInputField(editingAgent, richTextField).outerHTML);
+    if (iOSKeyboardHackElem == -1) {
+      contentNode.value = newValue;
+    } else {
+      contentNode.value = newValue.slice(0, iOSKeyboardHackElem);
+    }
+    editingAgent.updateValueHistory(component, richTextField, newValue);
+  }
+};
+AdfDhtmlRichTextEditorPeer.prototype.AddStyleBinding = function(componentId, propertyName, styleKey, eventType) {
+  AdfAssert.assertString(componentId);
+  AdfAssert.assertString(propertyName);
+  AdfAssert.assertString(styleKey);
+  AdfAssert.assertStringOrNull(eventType);
+  if (eventType == undefined) {
+    eventType = AdfActionEvent.ACTION_EVENT_TYPE;
+  }
+  var bindComponent = AdfPage.PAGE.findComponent(componentId);
+  var styleObserver = {componentId:componentId, propertyName:propertyName, styleKey:styleKey, eventType:eventType};
+  if (!this._styleObservers) {
+    this._styleObservers = new Array;
+  }
+  this._styleObservers.push(styleObserver);
+  if (eventType != AdfActionEvent.ACTION_EVENT_TYPE || !bindComponent.isDescendant(this.getComponent())) {
+    bindComponent.addEventListener(eventType, this._styleBindingActionListener, this);
+  }
+};
+AdfDhtmlRichTextEditorPeer.prototype.RemoveStyleBindings = function(component) {
+  var observers = this._styleObservers;
+  if (observers == undefined) {
+    return;
+  }
+  var length = observers.length;
+  var listener = this._styleBindingActionListener;
+  for (var i = 0;i < length;i++) {
+    var observer = observers[i];
+    var boundComponent = AdfPage.PAGE.findComponent(observer.componentId);
+    if (boundComponent != undefined) {
+      if (observer.eventType != AdfActionEvent.ACTION_EVENT_TYPE || !boundComponent.isDescendant(component)) {
+        boundComponent.removeEventListener(observer.eventType, listener, this);
+      }
+    }
+  }
+};
+AdfDhtmlRichTextEditorPeer._toolboxVisitChildrenCallback = function(component) {
+  var result = 0;
+  var codeEditingMode = this.isCodeEditingMode();
+  if (component instanceof AdfRichCommandToolbarButton) {
+    var clientId = component.getClientId();
+    if (clientId != this._modeButtonRichTextClientId && clientId != this._modeButtonCodeClientId) {
+      component.setProperty("selected", false, false, AdfUIComponent.PROPAGATE_IF_KNOWN_PROPERTY);
+      component.setProperty("disabled", codeEditingMode, false, AdfUIComponent.PROPAGATE_IF_KNOWN_PROPERTY);
+      result = 1;
+    }
+  } else {
+    if (component instanceof AdfRichSelectOneChoice || component instanceof AdfRichInputNumberSpinbox || component instanceof AdfRichInputColor) {
+      component.setProperty("disabled", codeEditingMode, false, AdfUIComponent.PROPAGATE_IF_KNOWN_PROPERTY);
+      result = 1;
+    }
+  }
+  return result;
+};
+AdfDhtmlRichTextEditorPeer.prototype._handleMouseUp = function(event) {
+  this.HandleContextChanged();
+  var agentName = navigator.userAgent.toLowerCase();
+  var target = event.target;
+  if (agentName.indexOf("chrome") != -1 && target.nodeName.toLowerCase() == "html") {
+    target.getElementsByTagName("body")[0].focus();
+  } else {
+    if (agentName.indexOf("edge") != -1 && target.nodeName.toLowerCase() == "body") {
+      target.focus();
+    }
+  }
+};
+AdfDhtmlRichTextEditorPeer.prototype._handleKeyDown = function(evt) {
+  var isIE = AdfAgent.AGENT.getPlatform() == AdfAgent.IE_PLATFORM;
+  var isGecko = AdfAgent.AGENT.getPlatform() == AdfAgent.GECKO_PLATFORM;
+  var plus_key = 187;
+  var minus_key = 189;
+  if (isIE) {
+    var time = this._keyTimer;
+    if (time) {
+      clearTimeout(time);
+    }
+    var methodCall = "AdfDhtmlRichTextEditorPeer.HandleTimerUpdate('" + this.getComponent().getClientId() + "')";
+    this._keyTimer = setTimeout(methodCall, 3E3);
+  }
+  if (isGecko) {
+    plus_key = 61;
+    minus_key = 109;
+  }
+  var keyCode = evt.keyCode;
+  if (keyCode == 9) {
+    if (evt.shiftKey) {
+      this._mouseDownOrTabBack = true;
+    }
+    var component = this.getComponent();
+    var editMode = component.getEditMode();
+    if (editMode == "wysiwyg") {
+      AdfEditingAgent.getInstance().handleTab(this._getContentField(component), evt);
+      if (isIE) {
+        if (evt.shiftKey) {
+          this._tabBack = true;
+        } else {
+          this._tabForward = true;
+        }
+      }
+    }
+  } else {
+    if (evt.ctrlKey) {
+      var cancelEvent = true;
+      if (evt.altKey) {
+        switch(keyCode) {
+          case plus_key:
+            this._execCommand(AdfDhtmlRichTextEditorPeer.STYLE_SUPERSCRIPT);
+            break;
+          case minus_key:
+            this._execCommand(AdfDhtmlRichTextEditorPeer.STYLE_SUBSCRIPT);
+            break;
+          default:
+            cancelEvent = false;
+        }
+      } else {
+        if (evt.shiftKey) {
+          switch(keyCode) {
+            case 72:
+              this._execCommand(AdfDhtmlRichTextEditorPeer.COMMAND_UNLINK);
+              break;
+            case 77:
+              this._execCommand(AdfDhtmlRichTextEditorPeer.STYLE_OUTDENT);
+              break;
+            case 83:
+              this._execCommand(AdfDhtmlRichTextEditorPeer.COMMAND_CLEAR_STYLING);
+              break;
+            case 87:
+              this._execCommand(AdfDhtmlRichTextEditorPeer.STYLE_COLOR_FOREGROUND);
+              break;
+            default:
+              cancelEvent = false;
+          }
+        } else {
+          switch(keyCode) {
+            case 53:
+              this._execCommand(AdfDhtmlRichTextEditorPeer.STYLE_STRIKETHROUGH);
+              break;
+            case 66:
+              this._execCommand(AdfDhtmlRichTextEditorPeer.STYLE_BOLD);
+              break;
+            case 69:
+              this._execCommand(AdfDhtmlRichTextEditorPeer.STYLE_JUSTIFY_CENTER);
+              break;
+            case 72:
+              window.setTimeout(this.createCallback(this._cmdCreateLink), 0);
+              break;
+            case 73:
+              this._execCommand(AdfDhtmlRichTextEditorPeer.STYLE_ITALIC);
+              break;
+            case 74:
+              this._execCommand(AdfDhtmlRichTextEditorPeer.STYLE_JUSTIFY_FULL);
+              break;
+            case 76:
+              this._execCommand(AdfDhtmlRichTextEditorPeer.STYLE_JUSTIFY_LEFT);
+              break;
+            case 77:
+              this._execCommand(AdfDhtmlRichTextEditorPeer.STYLE_INDENT);
+              break;
+            case 82:
+              this._execCommand(AdfDhtmlRichTextEditorPeer.STYLE_JUSTIFY_RIGHT);
+              break;
+            case 85:
+              this._execCommand(AdfDhtmlRichTextEditorPeer.STYLE_UNDERLINE);
+              break;
+            case 87:
+              this._execCommand(AdfDhtmlRichTextEditorPeer.STYLE_COLOR_BACKGROUND);
+              break;
+            case 219:
+              var value = this._getOneThroughSevenFontSize(this._queryCommandValue(AdfDhtmlRichTextEditorPeer.STYLE_FONT_SIZE));
+              if (value > 1) {
+                var newValue = +value - 1;
+                this._execCommand(AdfDhtmlRichTextEditorPeer.STYLE_FONT_SIZE, newValue);
+              }
+              break;
+            case 221:
+              var value = this._getOneThroughSevenFontSize(this._queryCommandValue(AdfDhtmlRichTextEditorPeer.STYLE_FONT_SIZE));
+              if (value < 7) {
+                var newValue = +value + 1;
+                this._execCommand(AdfDhtmlRichTextEditorPeer.STYLE_FONT_SIZE, newValue);
+              }
+              break;
+            default:
+              cancelEvent = false;
+          }
+        }
+      }
+      if (cancelEvent) {
+        AdfAgent.AGENT.eatEvent(evt);
+      }
+    }
+  }
+};
+AdfDhtmlRichTextEditorPeer.prototype._cmdCreateLink = function() {
+  return this._execCommand(AdfDhtmlRichTextEditorPeer.COMMAND_LINK);
+};
+AdfDhtmlRichTextEditorPeer.prototype._saveSelection = function() {
+  var range = AdfEditingAgent.getInstance().getSelectionRange(this._getContentField(this.getComponent()));
+  if (this._isTouch) {
+    if (range != null) {
+      this._lastSelectionRange = range;
+    }
+  } else {
+    this._lastSelectionRange = range;
+  }
+};
+AdfDhtmlRichTextEditorPeer.prototype._handleClonedEvent = function(componentEvent) {
+  var evt = componentEvent.getNativeEvent();
+  if (this._clonedEventMap != null && this._clonedEventMap[evt] != null) {
+    var peer = this;
+    var originalEvent = this._clonedEventMap[evt];
+    componentEvent.cancel = function() {
+      AdfDomUIInputEvent.superclass.cancel.call(componentEvent);
+      AdfAgent.AGENT.preventDefault(evt);
+      AdfAgent.AGENT.preventDefault(originalEvent);
+      delete peer._clonedEventMap[evt];
+    };
+  }
+};
+AdfDhtmlRichTextEditorPeer.prototype._removeSelection = function() {
+  delete this._lastSelectionRange;
+};
+AdfDhtmlRichTextEditorPeer.prototype._restoreSelection = function() {
+  if (this._lastSelectionRange != null) {
+    AdfEditingAgent.getInstance().setSelectionRange(this._getContentField(this.getComponent()), this._lastSelectionRange);
+  }
+};
+AdfDhtmlRichTextEditorPeer.prototype._handleContextChangedForCommands = function() {
+  if (this._commandObservers == undefined) {
+    return false;
+  }
+  var component = this.getComponent();
+  var contentField = this._getContentField(component);
+  var editingAgent = AdfEditingAgent.getInstance();
+  var commandObservers = this._commandObservers;
+  var length = commandObservers.length;
+  var oldCommandValues = this._oldCommandValues;
+  if (oldCommandValues == undefined) {
+    oldCommandValues = {};
+  }
+  var cached = {};
+  for (var i = 0;i < length;i++) {
+    var observerObj = commandObservers[i];
+    var commandKey = observerObj.command;
+    var listenerComponent = AdfPage.PAGE.findComponent(observerObj.componentId);
+    AdfAssert.assert(listenerComponent);
+    if (cached[commandKey] === undefined) {
+      var execCommandKey = AdfDhtmlRichTextEditorPeer._execCommandMap[commandKey];
+      if (execCommandKey == null) {
+        cached[commandKey] = null;
+      } else {
+        cached[commandKey] = editingAgent.queryCommandEnabled(component, contentField, execCommandKey);
+      }
+    }
+    var value = cached[commandKey];
+    if (oldCommandValues[commandKey] !== cached[commandKey]) {
+      switch(commandKey) {
+        case AdfDhtmlRichTextEditorPeer.COMMAND_INSERT:
+        ;
+        case AdfDhtmlRichTextEditorPeer.COMMAND_MODE_RICH_TEXT:
+        ;
+        case AdfDhtmlRichTextEditorPeer.COMMAND_MODE_CODE:
+          break;
+        default:
+          listenerComponent.setProperty("disabled", !cached[commandKey], false, false);
+      }
+    }
+  }
+  this._oldCommandValues = cached;
+};
+AdfDhtmlRichTextEditorPeer.prototype._handleContextChangedForStyles = function() {
+  var agent = AdfAgent.AGENT;
+  if (this._styleObservers == undefined) {
+    return false;
+  }
+  var length = this._styleObservers.length;
+  var oldStyleValues = this._oldStyleValues;
+  if (oldStyleValues == undefined) {
+    oldStyleValues = {};
+  }
+  var cached = {};
+  for (var i = 0;i < length;i++) {
+    var observerObj = this._styleObservers[i];
+    var styleKey = observerObj.styleKey;
+    var listenerComponent = AdfPage.PAGE.findComponent(observerObj.componentId);
+    AdfAssert.assert(listenerComponent);
+    if (cached[styleKey] == undefined) {
+      cached[styleKey] = this._getSelectionStyling(styleKey);
+    }
+    var value = cached[styleKey];
+    if (oldStyleValues[styleKey] !== value) {
+      var indeterminateValue = false;
+      if (styleKey == AdfDhtmlRichTextEditorPeer.STYLE_COLOR_BACKGROUND || styleKey == AdfDhtmlRichTextEditorPeer.STYLE_COLOR_FOREGROUND) {
+        value = AdfEditingAgent.getInstance().getColor(value);
+      } else {
+        if (styleKey == AdfDhtmlRichTextEditorPeer.STYLE_FONT_SIZE) {
+          value = this._getOneThroughSevenFontSize(value);
+          if (!(value > 0 && value < 8)) {
+            value = "2";
+            indeterminateValue = true;
+          } else {
+            value = value + "";
+          }
+        } else {
+          if (styleKey == AdfDhtmlRichTextEditorPeer.STYLE_FONT_NAME) {
+            if (listenerComponent instanceof AdfRichSelectOneChoice) {
+              var selectItems = listenerComponent.getSelectItems();
+              var selectItemsLength = selectItems.length;
+              var matched = false;
+              if (value != null) {
+                if (agent.getPlatform() == AdfAgent.WEBKIT_PLATFORM) {
+                  value = ("" + value).replace(/['"]+/g, "");
+                  value = ("" + value).replace(/, /gi, ",");
+                }
+              }
+              for (var j = 0;j < selectItemsLength;j++) {
+                if (selectItems[j].getLabel() == value) {
+                  value = selectItems[j].getValue();
+                  matched = true;
+                  break;
+                }
+              }
+              if (!matched) {
+                var bestMatch = Number.MAX_VALUE;
+                var match;
+                var matchedValue;
+                for (var k = 0;k < selectItemsLength;k++) {
+                  if ((match = selectItems[k].getValue().search(value)) > -1) {
+                    if (match < bestMatch) {
+                      bestMatch = match;
+                      matchedValue = selectItems[k].getValue();
+                    }
+                    matched = true;
+                  }
+                }
+                if (!matched) {
+                  for (var k = 1;k < selectItemsLength;k++) {
+                    if ((match = value.search(selectItems[k].getLabel())) > -1) {
+                      if (match < bestMatch) {
+                        bestMatch = match;
+                        matchedValue = selectItems[k].getValue();
+                      }
+                      matched = true;
+                    }
+                  }
+                }
+                if (matched) {
+                  value = matchedValue;
+                } else {
+                  value = selectItems[0].getValue();
+                }
+              }
+            }
+          }
+        }
+      }
+      indeterminateValue = indeterminateValue || this._getIndeterminateStyling(styleKey);
+      var oldValue = listenerComponent.getProperty(observerObj.propertyName);
+      var valueChanged = !AdfUIUtils.compareValues(oldValue, value);
+      if (valueChanged) {
+        if (observerObj.propertyName == "value") {
+          this._ignoreNextEvent(styleKey);
+        }
+        listenerComponent.setProperty(observerObj.propertyName, value, false, false);
+        if (styleKey == AdfDhtmlRichTextEditorPeer.STYLE_FONT_SIZE) {
+          AdfPage.PAGE.clearMessages(listenerComponent.getClientId());
+        }
+      }
+    }
+  }
+  this._oldStyleValues = cached;
+};
+AdfDhtmlRichTextEditorPeer.prototype._getOneThroughSevenFontSize = function(value) {
+  var result;
+  var rawValue = "" + value;
+  var pxIndex = rawValue.indexOf("px");
+  if (pxIndex != -1) {
+    result = parseInt(rawValue.substring(0, pxIndex));
+    if (result <= 10) {
+      result = 1;
+    } else {
+      if (result <= 13) {
+        result = 2;
+      } else {
+        if (result <= 16) {
+          result = 3;
+        } else {
+          if (result <= 18) {
+            result = 4;
+          } else {
+            if (result <= 24) {
+              result = 5;
+            } else {
+              if (result <= 32) {
+                result = 6;
+              } else {
+                result = 7;
+              }
+            }
+          }
+        }
+      }
+    }
+  } else {
+    result = parseInt(value) || 2;
+  }
+  return result;
+};
+AdfDhtmlRichTextEditorPeer.prototype._createIframe = function(component) {
+  var agent = AdfAgent.AGENT;
+  var contentField = this._getContentField(component);
+  var page = AdfPage.PAGE;
+  var iframe = this.getDomDocument().createElement("IFRAME");
+  iframe.frameBorder = "0";
+  var cssText = contentField.style.cssText;
+  if (cssText.length > 0) {
+    iframe.style.cssText = cssText;
+  }
+  iframe.className = contentField.className;
+  iframe.id = contentField.id;
+  if (page.isScreenReaderMode()) {
+    iframe.title = page.getLookAndFeel().getTranslatedString("af_richTextEditor.IFRAME_TITLE");
+  }
+  if (component.getContentDelivery() == "lazy") {
+    iframe.src = page.getLazyFetchURI(component.getClientId());
+  } else {
+    var src = contentField.getAttribute("src");
+    if (src && src != "") {
+      iframe.src = src;
+    }
+  }
+  this._loadCallback = this.createCallback(this._handleLoad);
+  agent.addBubbleEventListener(iframe, "load", this._loadCallback);
+  contentField.parentNode.replaceChild(iframe, contentField);
+  agent.elementsRemoved(contentField);
+  agent.elementsAdded(iframe);
+};
+AdfDhtmlRichTextEditorPeer.prototype._makeEditable = function(component) {
+  var contentField = this._getContentField(component);
+  AdfAssert.assertDomElement(contentField);
+  AdfEditingAgent.getInstance().setInlineFrameContentEditable(contentField);
+  this._addContextChangeListeners(contentField);
+};
+AdfDhtmlRichTextEditorPeer.prototype._setInlineFrameContent = function(inlineFrame, content) {
+  AdfAssert.assertDomElement(inlineFrame, "IFRAME");
+  AdfAssert.assertString(content);
+  var editingAgent = AdfEditingAgent.getInstance();
+  var inlineFrameDocument = editingAgent.getInlineFrameDocument(inlineFrame);
+  editingAgent.setRTL(inlineFrameDocument);
+  this._setInlineFrameStyle(inlineFrameDocument);
+  var inlineFrameBody = inlineFrameDocument.body;
+  if (content == "") {
+    content = editingAgent.getDefaultContent();
+  }
+  inlineFrameBody.innerHTML = content;
+};
+AdfDhtmlRichTextEditorPeer.prototype._setInlineFrameStyle = function(inlineFrameDocument) {
+  var inlineFrameBody = inlineFrameDocument.body;
+  var inlineFrameBodyStyle = inlineFrameBody.style;
+  var inlineFrameBodyInlineStyle = this._inlineFrameBodyInlineStyle;
+  if (inlineFrameBodyInlineStyle == null) {
+    var laf = AdfPage.PAGE.getLookAndFeel();
+    inlineFrameBodyInlineStyle = laf.getSkinProperty("af|richTextEditor-tr-field-inline-style");
+    inlineFrameBodyInlineStyle = inlineFrameBodyInlineStyle.replace(/ /g, ";").replace(/\+/g, " ").replace(/_/g, ":");
+    this._inlineFrameBodyInlineStyle = inlineFrameBodyInlineStyle;
+  }
+  inlineFrameBodyStyle.cssText = inlineFrameBodyInlineStyle;
+};
+AdfDhtmlRichTextEditorPeer.prototype._getToolboxComponent = function(component) {
+  var toolboxClientId = this._toolboxClientId;
+  if (toolboxClientId == null) {
+    var rteClientId = component.getClientId();
+    toolboxClientId = rteClientId + "_afrToolbox";
+    this._toolboxClientId = toolboxClientId;
+  }
+  return AdfPage.PAGE.findComponent(toolboxClientId);
+};
+AdfDhtmlRichTextEditorPeer.prototype._execCommand = function(key, value) {
+  var agent = AdfAgent.AGENT;
+  if (this.isCodeEditingMode() != true || key == AdfDhtmlRichTextEditorPeer.COMMAND_MODE_RICH_TEXT || key == AdfDhtmlRichTextEditorPeer.COMMAND_INSERT) {
+    AdfAssert.assertString(key);
+    var command = AdfDhtmlRichTextEditorPeer._execCommandMap[key];
+    AdfAssert.assertString(command);
+    var component = this.getComponent();
+    var element;
+    if (key == AdfDhtmlRichTextEditorPeer.COMMAND_INSERT && this.isCodeEditingMode() == true) {
+      element = this._getSourceCodeField(component);
+    } else {
+      element = this._getContentField(component);
+      AdfAssert.assertDomElement(element, "IFRAME");
+      if (this._isTouch && agent.getPlatform() == AdfAgent.WEBKIT_PLATFORM) {
+        element.focus();
+      }
+      this._restoreSelection();
+    }
+    var editingAgent = AdfEditingAgent.getInstance();
+    if (editingAgent.isEmptySelection(element)) {
+      var needExecCommand = this._invokeAdditionalCommands(component, element, command, value);
+      if (needExecCommand) {
+        editingAgent.execCommand(component, element, command, value);
+      }
+    } else {
+      editingAgent.execCommand(component, element, command, value);
+    }
+  }
+};
+AdfDhtmlRichTextEditorPeer.prototype._invokeAdditionalCommands = function(component, element, command, value) {
+  var commands = [];
+  var tempCommand;
+  var styles = [AdfDhtmlRichTextEditorPeer.STYLE_BOLD, AdfDhtmlRichTextEditorPeer.STYLE_ITALIC, AdfDhtmlRichTextEditorPeer.STYLE_UNDERLINE, AdfDhtmlRichTextEditorPeer.STYLE_STRIKETHROUGH, AdfDhtmlRichTextEditorPeer.STYLE_SUPERSCRIPT, AdfDhtmlRichTextEditorPeer.STYLE_SUBSCRIPT];
+  var oldStyleValues = this._oldStyleValues;
+  if (oldStyleValues == undefined) {
+    return true;
+  }
+  switch(command) {
+    case "bold":
+    ;
+    case "italic":
+    ;
+    case "underline":
+    ;
+    case "strikethrough":
+    ;
+    case "superscript":
+    ;
+    case "subscript":
+      break;
+    default:
+      return true;
+  }
+  var result = true;
+  var index;
+  for (index = 0;index < styles.length;++index) {
+    tempCommand = AdfDhtmlRichTextEditorPeer._execCommandMap[styles[index]];
+    if (tempCommand == undefined) {
+      continue;
+    } else {
+      if (tempCommand == command) {
+        if (oldStyleValues[styles[index]] && !this._getSelectionStyling(styles[index])) {
+          result = false;
+        }
+      } else {
+        var oldValue = oldStyleValues[styles[index]];
+        var selectionStyle = this._getSelectionStyling(styles[index]);
+        if (!(oldValue === undefined)) {
+          if (oldValue != selectionStyle) {
+            commands[commands.length] = tempCommand;
+          }
+        }
+      }
+    }
+  }
+  var editingAgent = AdfEditingAgent.getInstance();
+  for (index = 0;index < commands.length;++index) {
+    editingAgent.execCommand(component, element, commands[index], value);
+  }
+  return result;
+};
+AdfDhtmlRichTextEditorPeer.prototype._queryCommandValue = function(key) {
+  AdfAssert.assertString(key);
+  var command = AdfDhtmlRichTextEditorPeer._execCommandMap[key];
+  AdfAssert.assertString(command);
+  var component = this.getComponent();
+  var element = this._getContentField(component);
+  AdfAssert.assertDomElement(element, "IFRAME");
+  return AdfEditingAgent.getInstance().queryCommandValue(element, command);
+};
+AdfDhtmlRichTextEditorPeer.prototype._styleBindingActionListener = function(event) {
+  if (this._styleObservers == undefined || this._commandBeingProcessed) {
+    return;
+  }
+  this._commandBeingProcessed = true;
+  var eventComponentId = event.getSource().getClientId();
+  var observers = this._styleObservers;
+  var length = observers.length;
+  for (var i = 0;i < length;i++) {
+    var observer = observers[i];
+    if (observer.componentId == eventComponentId) {
+      event.setPartial(true);
+      if (!this._isIgnoreNextEvent(observer.styleKey)) {
+        if (observer.eventType == AdfActionEvent.ACTION_EVENT_TYPE) {
+          this._toggleSelectionStyling(observer.styleKey);
+        } else {
+          if (observer.eventType == AdfValueChangeEvent.VALUE_CHANGE_TYPE) {
+            var value = event.getNewValue();
+            if (value && value._class && value._class == "TrColor") {
+              var converter = new TrColorConverter(["#RRGGBB"], false);
+              value = converter.getAsString(value);
+              if (observer.styleKey == AdfDhtmlRichTextEditorPeer.STYLE_COLOR_BACKGROUND) {
+                this._oldStyleValues[observer.styleKey] = value;
+              }
+            }
+            this._execCommand(observer.styleKey, value);
+          } else {
+            AdfLogger.LOGGER.severe("This eventType (", eventType, ") is not supported by richTextEditor.");
+          }
+        }
+        this.HandleContextChanged();
+      }
+      var isIE11 = AdfAgent.AGENT.getPlatform() == AdfAgent.IE_PLATFORM && AdfAgent.AGENT.getVersion() == 11;
+      if (this._hadFirstFocus && !(isIE11 && this._isComponentHavingFocus())) {
+        this.focus(this.getComponent());
+      }
+      event.cancel();
+    }
+  }
+  this.UpdateValue();
+  delete this._commandBeingProcessed;
+};
+AdfDhtmlRichTextEditorPeer.prototype._isComponentHavingFocus = function() {
+  var component = this.getComponent();
+  var contentNode = this.isCodeEditingMode() ? this._getSourceCodeField(component) : this._getContentField(component);
+  var domDocument = AdfAgent.AGENT.getDomDocument();
+  var activeElement = domDocument.activeElement;
+  return activeElement && activeElement.id == contentNode.id;
+};
+AdfDhtmlRichTextEditorPeer.prototype._toggleSelectionStyling = function(styleKey) {
+  AdfAssert.assertString(styleKey);
+  return this._execCommand(styleKey, null);
+};
+AdfDhtmlRichTextEditorPeer.prototype._addContextChangeListeners = function(field) {
+  var component = this.getComponent();
+  var agent = AdfAgent.AGENT;
+  var editingAgent = AdfEditingAgent.getInstance();
+  var focusBlurElement = editingAgent.getFocusBlurElement(field);
+  this._focusCallback = this.createCallback(this._handleFocus);
+  this._blurCallback = this.createCallback(this._handleBlur);
+  if (this._isTouch && agent.getPlatform() == AdfAgent.WEBKIT_PLATFORM) {
+    agent.addBubbleEventListener(field, "blur", this._blurCallback);
+    if (AdfAgent.guessOS() != AdfAgent.ANDROID_OS) {
+      this._iOSBlurCallback = this.createCallback(this._handleBlur);
+      agent.addBubbleEventListener(focusBlurElement, "blur", this._iOSBlurCallback);
+      agent.addBubbleEventListener(field, "mouseleave", this._blurCallback);
+    }
+    var peer = this;
+    agent.addBubbleEventListener(focusBlurElement, "click", function() {
+      field.focus();
+    });
+  } else {
+    agent.addBubbleEventListener(focusBlurElement, "blur", this._blurCallback);
+  }
+  agent.addBubbleEventListener(focusBlurElement, "focus", this._focusCallback);
+  var sourceCodeField = this._getSourceCodeField(component);
+  this._sourceBlurCallback = this.createCallback(this._handleBlur);
+  this._sourceFocusCallback = this.createCallback(this._handleFocus);
+  agent.addBubbleEventListener(sourceCodeField, "blur", this._sourceBlurCallback);
+  agent.addBubbleEventListener(sourceCodeField, "focus", this._sourceFocusCallback);
+  var doc = editingAgent.getInlineFrameDocument(field);
+  this._keyDownCallback = this.createCallback(this._handleKeyDown);
+  agent.addBubbleEventListener(doc, "keydown", this._keyDownCallback);
+  agent.addBubbleEventListener(sourceCodeField, "keydown", this._keyDownCallback);
+  this._contextChangeCallback = this.createCallback(this.HandleContextChanged);
+  this._mouseUpCallBack = this.createCallback(this._handleMouseUp);
+  agent.addBubbleEventListener(doc, "mouseup", this._mouseUpCallBack);
+  agent.addBubbleEventListener(doc, "keyup", this._contextChangeCallback);
+  this._mouseDownCallback = this.createCallback(this._handleMouseDown);
+  agent.addBubbleEventListener(this.getDomElement(), "mousedown", this._mouseDownCallback);
+  if (AdfAgent.AGENT.getPlatform() != AdfAgent.IE_PLATFORM) {
+    agent.addBubbleEventListener(doc, "blur", this._contextChangeCallback);
+  }
+  var AdfAgentOS = AdfAgent.guessOS();
+  if (this._isTouch && AdfAgentOS != AdfAgent.WINDOWS_OS && AdfAgentOS != AdfAgent.ANDROID_OS) {
+    var peer = this;
+    this._saveSelectionInterval = setInterval(function() {
+      peer._saveSelection();
+    }, 500);
+    if (agent.getPlatform() == AdfAgent.WEBKIT_PLATFORM && agent.getVersion() < 536) {
+      this._handleCopyCallback = this.createCallback(this._handleCopy);
+      this.getDomDocument().addEventListener("copy", this._handleCopyCallback, true);
+      this._handlePasteCallback = this.createCallback(this._handlePaste);
+      this.getDomDocument().addEventListener("paste", this._handlePasteCallback, true);
+    }
+  }
+  this._redistributeEventsToNewTargetCallback = this.createCallback(this._redistributeEventsToNewTarget);
+  agent.addEventBubbles(doc, this._redistributeEventsToNewTargetCallback);
+};
+AdfDhtmlRichTextEditorPeer.prototype.RemoveContextChangeListeners = function(component) {
+  var agent = AdfAgent.AGENT;
+  var field = this._getContentField(component);
+  var editingAgent = AdfEditingAgent.getInstance();
+  var focusBlurElement = editingAgent.getFocusBlurElement(field);
+  if (this._isTouch && agent.getPlatform() == AdfAgent.WEBKIT_PLATFORM) {
+    agent.removeBubbleEventListener(field, "blur", this._blurCallback);
+    if (AdfAgent.guessOS() != AdfAgent.ANDROID_OS) {
+      agent.removeBubbleEventListener(focusBlurElement, "blur", this._iOSBlurCallback);
+    }
+  } else {
+    agent.removeBubbleEventListener(focusBlurElement, "blur", this._blurCallback);
+  }
+  delete this._blurCallback;
+  agent.removeBubbleEventListener(focusBlurElement, "focus", this._focusCallback);
+  delete this._focusCallback;
+  var sourceCodeField = this._getSourceCodeField(component);
+  agent.removeBubbleEventListener(sourceCodeField, "blur", this._sourceBlurCallback);
+  delete this._sourceBlurCallback;
+  agent.removeBubbleEventListener(sourceCodeField, "focus", this._sourceFocusCallback);
+  delete this._sourceFocusCallback;
+  var doc = editingAgent.getInlineFrameDocument(field);
+  agent.removeBubbleEventListener(doc, "mouseup", this._mouseUpCallBack);
+  delete this._mouseUpCallBack;
+  agent.removeBubbleEventListener(doc, "keyup", this._contextChangeCallback);
+  if (AdfAgent.AGENT.getPlatform() != AdfAgent.IE_PLATFORM) {
+    agent.removeBubbleEventListener(doc, "blur", this._contextChangeCallback);
+  }
+  delete this._contextChangeCallback;
+  agent.removeBubbleEventListener(doc, "keydown", this._keyDownCallback);
+  delete this._keyDownCallback;
+  agent.removeEventBubbles(doc, this._redistributeEventsToNewTargetCallback);
+  delete this._redistributeEventsToNewTargetCallback;
+  if (this._isTouch && this._saveSelectionInterval) {
+    clearInterval(this._saveSelectionInterval);
+  }
+};
+AdfDhtmlRichTextEditorPeer.prototype._redistributeEventsToNewTarget = function(evt) {
+  var comp = this.getComponent();
+  if (!evt) {
+    evt = this._getContentField(comp).contentWindow.event;
+  }
+  var agent = AdfAgent.AGENT;
+  if (agent.isKeyboardEvent(evt) || agent.isMouseEvent(evt)) {
+    var newEvent = AdfAgent.AGENT.cloneEvent(evt, this._getSourceCodeField(comp));
+    if (!this._clonedEventMap) {
+      this._clonedEventMap = new Array;
+    }
+    this._clonedEventMap[newEvent] = evt;
+    AdfPage.PAGE._redistribute(newEvent);
+  }
+};
+AdfDhtmlRichTextEditorPeer.prototype._handleFocus = function(evt) {
+  var agent = AdfAgent.AGENT;
+  if (!this._commandBeingProcessed) {
+    var component = this.getComponent();
+    var oldhadFirstFocus = this._hadFirstFocus;
+    if (!this._hadFirstFocus) {
+      this._hadFirstFocus = true;
+    }
+    var componentEvent = AdfAgent.AGENT.getComponentEvent(component, evt);
+    var field = this._getContentField(component);
+    AdfPage.PAGE.__setActiveDomNodeInfo(field, component.getClientId());
+    var focusTarget;
+    if (this.isCodeEditingMode()) {
+      focusTarget = this._getSourceCodeField(component);
+    } else {
+      focusTarget = AdfEditingAgent.getInstance().getContentWindow(field);
+      focusTarget = focusTarget.document;
+    }
+    if (focusTarget == evt.originalTarget && componentEvent.getEventPhase() == AdfBaseEvent.CAPTURING_PHASE) {
+      componentEvent.nextEventPhase();
+    }
+    this.HandleComponentFocus(componentEvent);
+    if (!oldhadFirstFocus && !this.isCodeEditingMode()) {
+      var toolboxComponent = this._getToolboxComponent(component);
+      this.visitChildren(toolboxComponent, AdfDhtmlRichTextEditorPeer._toolboxVisitChildrenCallback, this, true);
+    }
+  }
+  if (this._isTouch && agent.getPlatform() == AdfAgent.WEBKIT_PLATFORM && AdfAgent.guessOS() != AdfAgent.ANDROID_OS) {
+    if (agent._getTouchEventListeners) {
+      var touchEventListeners = agent._getTouchEventListeners();
+      if (touchEventListeners) {
+        for (var i = 0;i < touchEventListeners.length;i++) {
+          this.getDomDocument().removeEventListener(touchEventListeners[i].eventType, touchEventListeners[i].listener, touchEventListeners[i].capture);
+        }
+      }
+    }
+  }
+};
+AdfDhtmlRichTextEditorPeer.prototype._handleLoad = function(nativeEvent) {
+  var editingAgent = AdfEditingAgent.getInstance();
+  var component = this.getComponent();
+  AdfAssert.assertObject(component, "Unexpected unbound peer for load event on iframe.");
+  var contentField = this._getContentField(component);
+  AdfAssert.assertDomElement(contentField);
+  var needsDesignMode = !component.getDisabled() && !editingAgent.isDesignMode(contentField);
+  if (editingAgent.isDesignModeReloadingFrame()) {
+    if (needsDesignMode) {
+      this._makeEditable(component);
+      return;
+    }
+  }
+  var hiddenInputElement = this._getSourceCodeField(component);
+  AdfAssert.assertDomElement(hiddenInputElement);
+  if (component.getContentDelivery() != "lazy") {
+    this._setInlineFrameContent(contentField, hiddenInputElement.value);
+  } else {
+    var value = this.getCurrentContent(component, true);
+    hiddenInputElement.value = value;
+    var inlineFrameDocument = editingAgent.getInlineFrameDocument(contentField);
+    this._setInlineFrameStyle(inlineFrameDocument);
+  }
+  if (needsDesignMode) {
+    this._makeEditable(component);
+  }
+  if (!component.getReadOnly()) {
+    AdfRichTextEditorBehaviorManager.getInstance().registerComponent(component);
+  }
+  contentField.setAttribute("data-afr-rte-loaded", "1");
+};
+AdfDhtmlRichTextEditorPeer.prototype._handleBlur = function(evt) {
+  var agent = AdfAgent.AGENT;
+  if (!this._commandBeingProcessed) {
+    var component = this.getComponent();
+    var contentNode = this._getContentField(component);
+    var lastValue = AdfAgent.AGENT.getExpandoProperty(contentNode, AdfDhtmlInputBasePeer._LAST_VALUE);
+    if (this._tabForward) {
+      delete this._tabForward;
+      AdfFocusUtils.focusPreviousTabStop(AdfPage.PAGE.getActiveDomElement());
+    } else {
+      if (this._tabBack) {
+        delete this._tabBack;
+        AdfFocusUtils.focusNextTabStop(AdfPage.PAGE.getActiveDomElement());
+      }
+    }
+    this.UpdateValue();
+    if (this._mouseDownOrTabBack) {
+      delete this._mouseDownOrTabBack;
+    }
+    var isValueChanged = false;
+    var newValue = this._getSourceCodeField(component).value;
+    if (lastValue != newValue && !(lastValue === undefined)) {
+      isValueChanged = true;
+    }
+    if (isValueChanged && (!this._mouseDownOrTabBack || !component.getValid(component.getClientId()))) {
+      this.Validate(component, this.GetSubmittedValue(component, this.getDomElement()));
+      AdfAgent.AGENT.setExpandoProperty(contentNode, AdfDhtmlInputBasePeer._LAST_VALUE, newValue);
+    }
+  }
+  var AdfAgentOS = AdfAgent.guessOS();
+  if (this._isTouch && agent.getPlatform() == AdfAgent.WEBKIT_PLATFORM && AdfAgentOS != AdfAgent.ANDROID_OS && AdfAgentOS != AdfAgent.WINDOWS_OS) {
+    this._keyboardClose();
+    if (agent._getTouchEventListeners) {
+      var touchEventListeners = agent._getTouchEventListeners();
+      if (touchEventListeners) {
+        for (var i = 0;i < touchEventListeners.length;i++) {
+          this.getDomDocument().addEventListener(touchEventListeners[i].eventType, touchEventListeners[i].listener, touchEventListeners[i].capture);
+        }
+      }
+    }
+  }
+};
+AdfDhtmlRichTextEditorPeer.prototype._handleMouseDown = function(evt) {
+  this._mouseDownOrTabBack = true;
+};
+AdfDhtmlRichTextEditorPeer.prototype._handleCopy = function(event) {
+  if (event.clipboardData && this._lastSelectionRange != null) {
+    if (!this._isInPopup() && AdfPage.PAGE.getModalityManager().isGlassPaneVisible()) {
+      return;
+    }
+    var document = this.getDomDocument();
+    var copyElement = document.createElement("div");
+    copyElement.style.position = "absolute";
+    copyElement.style.left = "-1000px";
+    copyElement.style.top = "-1000px";
+    copyElement.contentEditable = "true";
+    copyElement.textContent = this._lastSelectionRange.toString();
+    document.body.appendChild(copyElement);
+    var rangeToSelect = document.createRange();
+    rangeToSelect.selectNodeContents(copyElement);
+    var selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(rangeToSelect);
+    document.execCommand("copy", false, null);
+    setTimeout(function() {
+      document.body.removeChild(copyElement);
+    }, 500);
+  }
+};
+AdfDhtmlRichTextEditorPeer.prototype._handlePaste = function(event) {
+  var agent = AdfAgent.AGENT;
+  if (event.clipboardData) {
+    if (!this._isInPopup() && AdfPage.PAGE.getModalityManager().isGlassPaneVisible()) {
+      return;
+    }
+    if (this._isInPopup() && agent.getPlatform() == AdfAgent.WEBKIT_PLATFORM && agent.getVersion() < 536) {
+      if (this._hasPasteEvent) {
+        return;
+      } else {
+        this._hasPasteEvent = true;
+        var peer = this;
+        setTimeout(function() {
+          delete peer._hasPasteEvent;
+        }, 500);
+      }
+    }
+    var pasteText = event.clipboardData.getData("Text");
+    this._execCommand("cmd_insert", pasteText);
+  }
+};
+AdfDhtmlRichTextEditorPeer.prototype._getSelectionStyling = function(styleKey) {
+  AdfAssert.assertString(styleKey);
+  var commandIdentifier = AdfDhtmlRichTextEditorPeer._execCommandMap[styleKey];
+  AdfAssert.assertString(commandIdentifier);
+  return AdfEditingAgent.getInstance().queryCommandState(this._getContentField(this.getComponent()), commandIdentifier);
+};
+AdfDhtmlRichTextEditorPeer.prototype._getIndeterminateStyling = function(styleKey) {
+  AdfAssert.assertString(styleKey);
+  var commandIdentifier = AdfDhtmlRichTextEditorPeer._execCommandMap[styleKey];
+  AdfAssert.assertString(commandIdentifier);
+  return AdfEditingAgent.getInstance().queryCommandIndeterminate(this._getContentField(this.getComponent()), commandIdentifier);
+};
+AdfDhtmlRichTextEditorPeer.prototype._ignoreNextEvent = function(styleKey) {
+  AdfAssert.assertString(styleKey);
+  if (this._ignoreEvents[styleKey] == undefined) {
+    this._ignoreEvents[styleKey] = 0;
+  }
+  this._ignoreEvents[styleKey]++;
+};
+AdfDhtmlRichTextEditorPeer.prototype._isIgnoreNextEvent = function(styleKey) {
+  AdfAssert.assertString(styleKey);
+  if (this._ignoreEvents[styleKey] == undefined || this._ignoreEvents[styleKey] == 0) {
+    return false;
+  } else {
+    this._ignoreEvents[styleKey]--;
+    return true;
+  }
+};
+AdfDhtmlRichTextEditorPeer.prototype._keyboardClose = function() {
+  var editingAgent = AdfEditingAgent.getInstance();
+  var inlineFrame = this._getContentField(this.getComponent());
+  var focusBlurElement = editingAgent.getFocusBlurElement(inlineFrame);
+  var inputElement = AdfDhtmlRichTextEditorPeer._getDummyInputField(editingAgent, inlineFrame);
+  focusBlurElement.appendChild(inputElement);
+  inputElement.focus();
+  inputElement.blur();
+  focusBlurElement.removeChild(inputElement);
+};
+AdfDhtmlRichTextEditorPeer._getDummyInputField = function(editingAgent, inlineFrame) {
+  var domDoc = editingAgent.getInlineFrameDocument(inlineFrame);
+  var inputElement = domDoc.createElement("input");
+  inputElement.type = "text";
+  inputElement.style.position = "absolute";
+  inputElement.style.left = "0px";
+  inputElement.style.top = "0px";
+  inputElement.style.height = "0px";
+  inputElement.style.width = "0px";
+  inputElement.style.opacity = "0";
+  return inputElement;
+};
+
+function AdfRichTextEditorBehavior(richTextEditorId, type, typeParameter) {
+  this.Init(richTextEditorId, type, typeParameter);
+}
+AdfRichTextEditorBehavior.InitClass = function() {
+  AdfDhtmlRichTextEditorPeer.InitConstants();
+  var map = {};
+  var valueString = "value";
+  var selectedString = "selected";
+  map[AdfDhtmlRichTextEditorPeer.STYLE_BOLD] = selectedString;
+  map[AdfDhtmlRichTextEditorPeer.STYLE_ITALIC] = selectedString;
+  map[AdfDhtmlRichTextEditorPeer.STYLE_UNDERLINE] = selectedString;
+  map[AdfDhtmlRichTextEditorPeer.STYLE_STRIKETHROUGH] = selectedString;
+  map[AdfDhtmlRichTextEditorPeer.STYLE_LIST_UNORDERED] = selectedString;
+  map[AdfDhtmlRichTextEditorPeer.STYLE_LIST_ORDERED] = selectedString;
+  map[AdfDhtmlRichTextEditorPeer.STYLE_INDENT] = selectedString;
+  map[AdfDhtmlRichTextEditorPeer.STYLE_OUTDENT] = selectedString;
+  map[AdfDhtmlRichTextEditorPeer.STYLE_JUSTIFY_LEFT] = selectedString;
+  map[AdfDhtmlRichTextEditorPeer.STYLE_JUSTIFY_CENTER] = selectedString;
+  map[AdfDhtmlRichTextEditorPeer.STYLE_JUSTIFY_RIGHT] = selectedString;
+  map[AdfDhtmlRichTextEditorPeer.STYLE_JUSTIFY_FULL] = selectedString;
+  map[AdfDhtmlRichTextEditorPeer.STYLE_SUPERSCRIPT] = selectedString;
+  map[AdfDhtmlRichTextEditorPeer.STYLE_SUBSCRIPT] = selectedString;
+  map[AdfDhtmlRichTextEditorPeer.STYLE_COLOR_FOREGROUND] = valueString;
+  map[AdfDhtmlRichTextEditorPeer.STYLE_COLOR_BACKGROUND] = valueString;
+  map[AdfDhtmlRichTextEditorPeer.STYLE_FONT_SIZE] = valueString;
+  map[AdfDhtmlRichTextEditorPeer.STYLE_FONT_NAME] = valueString;
+  this._commandTypeToPropertyMap = map;
+  var propertyToEventMap = {};
+  propertyToEventMap[selectedString] = AdfActionEvent.ACTION_EVENT_TYPE;
+  propertyToEventMap[valueString] = AdfValueChangeEvent.VALUE_CHANGE_TYPE;
+  this._propertyToEvent = propertyToEventMap;
+};
+AdfObject.createSubclass(AdfRichTextEditorBehavior, AdfClientBehavior);
+AdfRichTextEditorBehavior.prototype.Init = function(richTextEditorId, type, typeParameter) {
+  AdfRichTextEditorBehavior.superclass.Init.call(this);
+  AdfAssert.assertString(richTextEditorId);
+  AdfAssert.assertString(type);
+  this._richTextEditorId = richTextEditorId;
+  this._type = type;
+  this._typeParameter = typeParameter;
+};
+AdfRichTextEditorBehavior.prototype.initialize = function(behaviorComponent) {
+  AdfAssert.assertPrototype(behaviorComponent, AdfUIComponent);
+  var behaviorComponentId = behaviorComponent.getClientId();
+  this._behaviorComponentId = behaviorComponentId;
+  return AdfPage.PAGE.scheduleTimer(this, this._hookUpFor, behaviorComponentId, 0);
+};
+AdfRichTextEditorBehavior.prototype._hookUpFor = function(behaviorComponentId) {
+  var type = this._type;
+  var propertyName = AdfRichTextEditorBehavior._commandTypeToPropertyMap[type];
+  var eventType = AdfRichTextEditorBehavior._propertyToEvent[propertyName];
+  var behaviorComponent = AdfPage.PAGE.findComponent(behaviorComponentId);
+  var RTE = behaviorComponent.findComponent(this._richTextEditorId);
+  var richTextEditorId = RTE.getClientId();
+  this._richTextEditorClientId = richTextEditorId;
+  AdfRichTextEditorBehaviorManager.getInstance().addBinding(richTextEditorId, behaviorComponentId, behaviorComponent, type, this._typeParameter, propertyName, eventType);
+};

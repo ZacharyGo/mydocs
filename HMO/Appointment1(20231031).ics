@@ -1,0 +1,16 @@
+BEGIN:VCALENDAR
+PRODID:-//52.88.206.80//NONSGML iCalcreator 2.6//
+VERSION:2.0
+BEGIN:VEVENT
+UID:1144409540@scheduling
+DTSTAMP:20231030T123023Z
+DESCRIPTION:Client time zone: Asia/Manila\n\nChange Appointment: https://ap
+ p.acuityscheduling.com/schedule.php?owner=26043403&action=appt&id%5B%5D=32
+ 0bd3e5821f644d9e6f85542c5e17e1\n
+DTSTART:20231103T093000Z
+DTEND:20231103T095000Z
+LOCATION:PCC BGC\, Taguig City
+SUMMARY:Maxicare Healthcare Services Inc: Consultation Pulmonology: PCC BGC
+  (Dr. Patricia Dee (BGC))
+END:VEVENT
+END:VCALENDAR
