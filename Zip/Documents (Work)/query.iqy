@@ -1,0 +1,16 @@
+WEB
+1
+https://fujitsu.sharepoint.com/teams/Global-4e394fa0/_vti_bin/owssvr.dll?XMLDATA=1&List={1956DD74-0A99-4032-BA39-C911CBE046CB}&View=743EAE7C-2DA3-42D8-A39F-9693E106F887&RowLimit=0&RootFolder=%2fteams%2fGlobal%2d4e394fa0%2fShared%20Documents%2fGeneral%2fB%20Development
+
+Selection={1956DD74-0A99-4032-BA39-C911CBE046CB}-743EAE7C-2DA3-42D8-A39F-9693E106F887
+EditWebPage=
+Formatting=None
+PreFormattedTextToColumns=True
+ConsecutiveDelimitersAsOne=True
+SingleBlockTextImport=False
+DisableDateRecognition=False
+DisableRedirections=False
+SharePointApplication=https://fujitsu.sharepoint.com/teams/Global-4e394fa0/_vti_bin
+SharePointListView=743EAE7C-2DA3-42D8-A39F-9693E106F887
+SharePointListName={1956DD74-0A99-4032-BA39-C911CBE046CB}
+RootFolder=/teams/Global%2d4e394fa0/Shared%20Documents/General/B%20Development
