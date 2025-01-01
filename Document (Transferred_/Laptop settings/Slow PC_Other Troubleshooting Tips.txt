@@ -1,0 +1,17 @@
+This is MIS' troubleshooting of Azer's PC.
+Actions Taken:
+-	Multiple remote sessions
+-	Upgraded OS to 21h2
+-	Ran chkkdsk (no bad sectors found)
+-	Ran sfc /scannow (repaired corrupted files)
+-	Installed pending Windows Updates
+-	Changed number of processors running
+-	Changed number of allocated file size
+-	Upgraded MS Office
+
+
+For Hazel, PC slowed down after Windows Update.
+Her action items while no MIS reply/support yet:
+- Disk Cleanup
+- Defrag
+PC performance returned to prior Windows Update.

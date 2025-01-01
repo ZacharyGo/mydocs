@@ -1,0 +1,525 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<style>
+.style0{
+mso-number-format:General;
+text-align:general;
+vertical-align:bottom;
+white-space:nowrap;
+mso-rotate:0;
+mso-background-source:auto;
+mso-pattern:auto;
+color:windowtext;
+font-size:10.0pt;
+font-weight:400;
+font-style:normal;
+text-decoration:none;
+font-family:Arial;
+mso-generic-font-family:auto;
+mso-font-charset:0;
+border:none;
+mso-protection:locked visible;
+mso-style-name:Normal;
+mso-style-id:0;
+}
+.dateformat0{
+font-size: 12px;
+white-space:nowrap;
+height: 25px;
+padding-bottom: 4px;
+padding-left: 4px;
+padding-right: 4px;
+padding-top: 4px;
+mso-number-format:"\[$-0409\]mm\/dd\/yyyy";
+}
+.dateformat1{
+font-size: 12px;
+white-space:nowrap;
+height: 25px;
+padding-bottom: 4px;
+padding-left: 4px;
+padding-right: 4px;
+padding-top: 4px;
+mso-number-format:"\[$-0409\]mm\/dd\/yyyy";
+}
+.title{
+font-size: 16px;
+text-align:center;
+vertical-align:middle;
+font-weight:bold;
+white-space:nowrap;
+height: 80px;
+border:none;
+padding-bottom: 4px;
+padding-left: 4px;
+padding-right: 4px;
+padding-top: 4px;
+mso-number-format:"\@";
+}
+.other{
+font-size: 12px;
+white-space:nowrap;
+height: 25px;
+padding-bottom: 4px;
+padding-left: 4px;
+padding-right: 4px;
+padding-top: 4px;
+mso-number-format:"\@";
+}
+table {
+min-width: 1000px;
+}--->
+</style>
+<table x:str border="0" bordercolor="gray" cellspacing="1" cellpadding="0" width="100%">
+<tr><td colspan="2" class="title">
+<img src='https://sf.dataon.com/sf6/index.cfm?sfid=sys.sec.getImage&img=3CD398A897DFDD943585E67A97F78B92BB58AA459D2A318D6B91A3A30E9A8296C66643135D9848D19850938F1B90845A8B98B6CB9D94529193668DF5824D068A879275489E44B085949B0FCAD4C418418CB140' align='left' border='0' height='80px' >
+</td><td colspan="6" class="title"><b>Overtime Request</b></td>
+</tr>
+<tr style="height:10px"></tr>
+</table>
+<table x:str border="0" bordercolor="gray" cellspacing="1" cellpadding="0" width="100%">
+<tr>
+<td style="border:.5pt solid gray;" align="center"><b>No</b></td>
+<td style="border:.5pt solid gray;" align="center"><b>Request Number</b></td>
+<td style="border:.5pt solid gray;" align="center"><b>Request For</b></td>
+<td style="border:.5pt solid gray;" align="center"><b>Overtime Type</b></td>
+<td style="border:.5pt solid gray;" align="center"><b>Start Date</b></td>
+<td style="border:.5pt solid gray;" align="center"><b>End Date</b></td>
+<td style="border:.5pt solid gray;" align="center"><b>Remark</b></td>
+<td style="border:.5pt solid gray;" align="center"><b>Request Status</b></td>
+</tr>
+<tr><td style="border:.5pt solid gray;" x:num>1</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+CO2-OVR-202206-089372</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+ZACHARY SEE GO</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Overtime</td>
+<td style="border:.5pt solid gray;" class="dateformat0" align="center" x:num>
+44740</td>
+<td style="border:.5pt solid gray;" class="dateformat1" align="center" x:num>
+44740</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Code Tracing 18700</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Unverified</td>
+</tr>
+<tr><td style="border:.5pt solid gray;" x:num>2</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+CO2-OVR-202206-089182</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+ZACHARY SEE GO</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Overtime</td>
+<td style="border:.5pt solid gray;" class="dateformat0" align="center" x:num>
+44736</td>
+<td style="border:.5pt solid gray;" class="dateformat1" align="center" x:num>
+44736</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Code tracing for ticket 18700</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Unverified</td>
+</tr>
+<tr><td style="border:.5pt solid gray;" x:num>3</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+CO2-OVR-202206-089173</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+ZACHARY SEE GO</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Overtime</td>
+<td style="border:.5pt solid gray;" class="dateformat0" align="center" x:num>
+44735</td>
+<td style="border:.5pt solid gray;" class="dateformat1" align="center" x:num>
+44735</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Code tracing for ticket 18700</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Unverified</td>
+</tr>
+<tr><td style="border:.5pt solid gray;" x:num>4</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+CO2-OVR-202206-089103</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+ZACHARY SEE GO</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Overtime</td>
+<td style="border:.5pt solid gray;" class="dateformat0" align="center" x:num>
+44734</td>
+<td style="border:.5pt solid gray;" class="dateformat1" align="center" x:num>
+44734</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Assist ticket 18700 (Code tracing)</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Unverified</td>
+</tr>
+<tr><td style="border:.5pt solid gray;" x:num>5</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+CO2-OVR-202206-088639</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+ZACHARY SEE GO</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Overtime</td>
+<td style="border:.5pt solid gray;" class="dateformat0" align="center" x:num>
+44728</td>
+<td style="border:.5pt solid gray;" class="dateformat1" align="center" x:num>
+44728</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Work on ticket number 18702 - Updating investigation Report</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Fully Approved</td>
+</tr>
+<tr><td style="border:.5pt solid gray;" x:num>6</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+CO2-OVR-202206-088638</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+ZACHARY SEE GO</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Overtime</td>
+<td style="border:.5pt solid gray;" class="dateformat0" align="center" x:num>
+44728</td>
+<td style="border:.5pt solid gray;" class="dateformat1" align="center" x:num>
+44728</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Work on ticket number 18702 (Code tracing)</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Cancelled</td>
+</tr>
+<tr><td style="border:.5pt solid gray;" x:num>7</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+CO2-OVR-202206-088601</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+ZACHARY SEE GO</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Overtime</td>
+<td style="border:.5pt solid gray;" class="dateformat0" align="center" x:num>
+44728</td>
+<td style="border:.5pt solid gray;" class="dateformat1" align="center" x:num>
+44728</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Work on ticket number 18700 (Code tracing)</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Cancelled</td>
+</tr>
+<tr><td style="border:.5pt solid gray;" x:num>8</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+CO2-OVR-202206-088488</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+ZACHARY SEE GO</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Overtime</td>
+<td style="border:.5pt solid gray;" class="dateformat0" align="center" x:num>
+44725</td>
+<td style="border:.5pt solid gray;" class="dateformat1" align="center" x:num>
+44725</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Work on Ticket 18700. </td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Fully Approved</td>
+</tr>
+<tr><td style="border:.5pt solid gray;" x:num>9</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+CO2-OVR-202206-088299</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+ZACHARY SEE GO</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Overtime</td>
+<td style="border:.5pt solid gray;" class="dateformat0" align="center" x:num>
+44718</td>
+<td style="border:.5pt solid gray;" class="dateformat1" align="center" x:num>
+44718</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Update Investigation Report based on reviewer's corrections</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Fully Approved</td>
+</tr>
+<tr><td style="border:.5pt solid gray;" x:num>10</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+CO2-OVR-202204-084514</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+ZACHARY SEE GO</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Overtime</td>
+<td style="border:.5pt solid gray;" class="dateformat0" align="center" x:num>
+44670</td>
+<td style="border:.5pt solid gray;" class="dateformat1" align="center" x:num>
+44670</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+CPO PH_Database Transaction Performance</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Fully Approved</td>
+</tr>
+<tr><td style="border:.5pt solid gray;" x:num>11</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+CO2-OVR-202204-084513</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+ZACHARY SEE GO</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Overtime</td>
+<td style="border:.5pt solid gray;" class="dateformat0" align="center" x:num>
+44670</td>
+<td style="border:.5pt solid gray;" class="dateformat1" align="center" x:num>
+44670</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+CPO PH_Database Transaction Performance</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Cancelled</td>
+</tr>
+<tr><td style="border:.5pt solid gray;" x:num>12</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+CO2-OVR-202204-082673</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+ZACHARY SEE GO</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Overtime</td>
+<td style="border:.5pt solid gray;" class="dateformat0" align="center" x:num>
+44670</td>
+<td style="border:.5pt solid gray;" class="dateformat1" align="center" x:num>
+44670</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+CPO PH_Database Transaction Performance</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Cancelled</td>
+</tr>
+<tr><td style="border:.5pt solid gray;" x:num>13</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+CO2-OVR-202204-082630</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+ZACHARY SEE GO</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Overtime</td>
+<td style="border:.5pt solid gray;" class="dateformat0" align="center" x:num>
+44676</td>
+<td style="border:.5pt solid gray;" class="dateformat1" align="center" x:num>
+44677</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+CPO PH_Yakushin/Tophat Progress Management</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Fully Approved</td>
+</tr>
+<tr><td style="border:.5pt solid gray;" x:num>14</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+CO2-OVR-202204-082454</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+ZACHARY SEE GO</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Overtime</td>
+<td style="border:.5pt solid gray;" class="dateformat0" align="center" x:num>
+44670</td>
+<td style="border:.5pt solid gray;" class="dateformat1" align="center" x:num>
+44670</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+CPO PH_Database Transaction Performance</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Cancelled</td>
+</tr>
+<tr><td style="border:.5pt solid gray;" x:num>15</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+CO2-OVR-202203-082292</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+ZACHARY SEE GO</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Overtime</td>
+<td style="border:.5pt solid gray;" class="dateformat0" align="center" x:num>
+44641</td>
+<td style="border:.5pt solid gray;" class="dateformat1" align="center" x:num>
+44651</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Read Alsok Documents
+</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Fully Approved</td>
+</tr>
+<tr><td style="border:.5pt solid gray;" x:num>16</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+CO2-OVR-202203-082153</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+ZACHARY SEE GO</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Overtime</td>
+<td style="border:.5pt solid gray;" class="dateformat0" align="center" x:num>
+44646</td>
+<td style="border:.5pt solid gray;" class="dateformat1" align="center" x:num>
+44646</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Attend CPO Training (PH_Character Coding)</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Fully Approved</td>
+</tr>
+<tr><td style="border:.5pt solid gray;" x:num>17</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+CO2-OVR-202203-081620</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+ZACHARY SEE GO</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Overtime</td>
+<td style="border:.5pt solid gray;" class="dateformat0" align="center" x:num>
+44639</td>
+<td style="border:.5pt solid gray;" class="dateformat1" align="center" x:num>
+44639</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+CPO Training - PH_Abnormal Process Control and PH_Java Secure</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Fully Approved</td>
+</tr>
+<tr><td style="border:.5pt solid gray;" x:num>18</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+CO2-OVR-202203-081619</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+ZACHARY SEE GO</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Overtime</td>
+<td style="border:.5pt solid gray;" class="dateformat0" align="center" x:num>
+44630</td>
+<td style="border:.5pt solid gray;" class="dateformat1" align="center" x:num>
+44637</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Review Alsok Documents</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Fully Approved</td>
+</tr>
+<tr><td style="border:.5pt solid gray;" x:num>19</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+CO2-OVR-202203-081617</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+ZACHARY SEE GO</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Overtime</td>
+<td style="border:.5pt solid gray;" class="dateformat0" align="center" x:num>
+44639</td>
+<td style="border:.5pt solid gray;" class="dateformat1" align="center" x:num>
+44639</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+CPO Training - PH_Java Secure</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Cancelled</td>
+</tr>
+<tr><td style="border:.5pt solid gray;" x:num>20</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+CO2-OVR-202203-081616</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+ZACHARY SEE GO</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Overtime</td>
+<td style="border:.5pt solid gray;" class="dateformat0" align="center" x:num>
+44639</td>
+<td style="border:.5pt solid gray;" class="dateformat1" align="center" x:num>
+44639</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+CPO Training - PH_Abnormal Process Control</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Cancelled</td>
+</tr>
+<tr><td style="border:.5pt solid gray;" x:num>21</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+CO2-OVR-202203-081614</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+ZACHARY SEE GO</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Overtime</td>
+<td style="border:.5pt solid gray;" class="dateformat0" align="center" x:num>
+44637</td>
+<td style="border:.5pt solid gray;" class="dateformat1" align="center" x:num>
+44637</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Review Alsok Documents</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Cancelled</td>
+</tr>
+<tr><td style="border:.5pt solid gray;" x:num>22</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+CO2-OVR-202203-081613</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+ZACHARY SEE GO</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Overtime</td>
+<td style="border:.5pt solid gray;" class="dateformat0" align="center" x:num>
+44635</td>
+<td style="border:.5pt solid gray;" class="dateformat1" align="center" x:num>
+44635</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+read Alsok Documents</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Cancelled</td>
+</tr>
+<tr><td style="border:.5pt solid gray;" x:num>23</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+CO2-OVR-202203-081612</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+ZACHARY SEE GO</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Overtime</td>
+<td style="border:.5pt solid gray;" class="dateformat0" align="center" x:num>
+44630</td>
+<td style="border:.5pt solid gray;" class="dateformat1" align="center" x:num>
+44630</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Continue reviewing Alsok Documents</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Cancelled</td>
+</tr>
+<tr><td style="border:.5pt solid gray;" x:num>24</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+CO2-OVR-202203-081611</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+ZACHARY SEE GO</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Overtime</td>
+<td style="border:.5pt solid gray;" class="dateformat0" align="center" x:num>
+44638</td>
+<td style="border:.5pt solid gray;" class="dateformat1" align="center" x:num>
+44638</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+read Alsok Documents</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Cancelled</td>
+</tr>
+<tr><td style="border:.5pt solid gray;" x:num>25</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+CO2-OVR-202203-081609</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+ZACHARY SEE GO</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Overtime</td>
+<td style="border:.5pt solid gray;" class="dateformat0" align="center" x:num>
+44638</td>
+<td style="border:.5pt solid gray;" class="dateformat1" align="center" x:num>
+44638</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Continue reviewing Alsok Documents</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Cancelled</td>
+</tr>
+<tr><td style="border:.5pt solid gray;" x:num>26</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+CO2-OVR-202203-081396</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+ZACHARY SEE GO</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Overtime</td>
+<td style="border:.5pt solid gray;" class="dateformat0" align="center" x:num>
+44630</td>
+<td style="border:.5pt solid gray;" class="dateformat1" align="center" x:num>
+44630</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Creation of replication document fir #18326</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Cancelled</td>
+</tr>
+<tr><td style="border:.5pt solid gray;" x:num>27</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+CO2-OVR-202202-080353</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+ZACHARY SEE GO</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Overtime</td>
+<td style="border:.5pt solid gray;" class="dateformat0" align="center" x:num>
+44613</td>
+<td style="border:.5pt solid gray;" class="dateformat1" align="center" x:num>
+44613</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Reading Coding convention for Java</td>
+<td style="border:.5pt solid gray;" class="other" align="left" >
+Fully Approved</td>
+</tr>
+</table>
+</html>
